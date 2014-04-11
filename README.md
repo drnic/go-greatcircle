@@ -1,0 +1,1 @@
+Great Circle computations library
