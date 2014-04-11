@@ -1,1 +1,1 @@
-Great Circle computations library
+Go language library for various Earth coordinate & Great Circle calcuations
