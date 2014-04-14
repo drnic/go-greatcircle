@@ -45,7 +45,7 @@ var initialBearing = []struct {
 	{0.657302632, -2.131588069, 0.657782598, -2.126090282, 83.60950267463232},
 }
 
-var intersection = []struct {
+var intersectionRadials = []struct {
 	lat1     float64
 	lon1     float64
 	bearing1 float64
@@ -114,8 +114,8 @@ func TestInitialBearing(t *testing.T) {
 }
 
 func TestIntersection(t *testing.T) {
-	for _, v := range intersection {
-		reslat3, reslon3, reserr := Intersection(v.lat1, v.lon1, v.bearing1, v.lat2, v.lon2, v.bearing2)
+	for _, v := range intersectionRadials {
+		reslat3, reslon3, reserr := IntersectionRadials(v.lat1, v.lon1, v.bearing1, v.lat2, v.lon2, v.bearing2)
 		if reslat3 != v.lat3 && reslon3 != v.lon3 && reserr == nil {
 			t.Fatalf("Expected: lat3: %v lon3: %v err: %v, received lat3: %v lon3: %v err: %v ", v.lat3, v.lon3, v.err, reslat3, reslon3, reserr)
 		}
