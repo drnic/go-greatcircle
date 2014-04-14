@@ -2,7 +2,6 @@ package gogreatcircle
 
 import (
 	"errors"
-	"fmt"
 	"math"
 )
 
@@ -104,7 +103,6 @@ func IntersectionRadials(lat1, lon1, bearing1, lat2, lon2, bearing2 float64) (la
 	lon3 = lon1 + dLon13
 	lon3 = math.Mod((lon3+3*math.Pi), (2*math.Pi)) - math.Pi // normalise to -180..+180º
 
-	fmt.Println(RadiansToDegrees(lat3), RadiansToDegrees(lon3))
 	return lat3, lon3, nil
 
 }
