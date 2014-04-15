@@ -2,7 +2,6 @@ package gogreatcircle
 
 import (
 	"errors"
-	"fmt"
 	"math"
 )
 
@@ -142,7 +141,6 @@ func PointInReach(point1, point2, point3 *Coordinate, distance float64) (respons
 	//the distance to the given point3 and compare it against the given distance
 	closestpoint := ClosestPoint(point1, point2, point3)
 	distanceBetweenPoints := Distance(&closestpoint, point3)
-	fmt.Println(distanceBetweenPoints)
 	if distanceBetweenPoints <= distance {
 		return true
 	} else {
