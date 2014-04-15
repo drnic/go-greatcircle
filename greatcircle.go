@@ -7,6 +7,16 @@ import (
 
 type vector [3]float64
 
+type Coordinate struct {
+	latitude  float64
+	longitude float64
+}
+
+type Radial struct {
+	Coordinate
+	bearing float64
+}
+
 func cross(v1, v2 vector) vector {
 	return vector{
 		v1[1]*v2[2] - v1[2]*v2[1],
@@ -15,68 +25,76 @@ func cross(v1, v2 vector) vector {
 	}
 }
 
-func approxDistance(lat1, lon1, lat2, lon2 float64) float64 {
-	w := lon2 - lon1
-	v := lat1 - lat2
-	s := 2 * math.Asin(math.Sqrt((math.Sin(v/2)*math.Sin(v/2))+(math.Cos(lat1)*math.Cos(lat2)*math.Sin(w/2)*math.Sin(w/2))))
+func approxDistance(point1, point2 *Coordinate) float64 {
+	w := point2.longitude - point1.longitude
+	v := point1.latitude - point2.latitude
+	s := 2 * math.Asin(math.Sqrt((math.Sin(v/2)*math.Sin(v/2))+(math.Cos(point1.latitude)*math.Cos(point2.latitude)*math.Sin(w/2)*math.Sin(w/2))))
 	return s
 }
 
-func modlon(x float64) float64 { //ensure longitude is +/-180
+func modlon(x float64) float64 {
+	//ensure longitude is +/-180
 	return math.Mod(x+math.Pi, 2*math.Pi) - math.Pi
 }
 
 func CoordinateToDecimalDegree(degrees, minutes, seconds float64) float64 {
+	// converting coordiantes from degrees, minutes, seconds into decimal degrees
 	return degrees + (minutes / 60) + (seconds / 3600)
 }
 
 func DegreesToRadians(degrees float64) float64 {
+	// converting decimal degrees to radians
 	return degrees * (math.Pi / 180)
 }
 
 func RadiansToDegrees(radians float64) float64 {
+	// converting radians to decimal degrees
 	return radians * (180 / math.Pi)
 }
 
 func NMToRadians(nauticalMiles float64) float64 {
+	// converting nautical miles to radians
 	return (math.Pi / (180 * 60)) * nauticalMiles
 }
 
 func RadiansToNM(radians float64) float64 {
+	// converting radians to nautical miles
 	return ((180 * 60) / math.Pi) * radians
 }
 
-func Distance(lat1, lon1, lat2, lon2 float64) float64 {
-	return (math.Acos(math.Sin(lat1)*math.Sin(lat2)+math.Cos(lat1)*math.Cos(lat2)*math.Cos(lon1-lon2)) * 180 * 60) / math.Pi
+func Distance(point1, point2 *Coordinate) float64 {
+	// distance between 2 coordiantes
+	return (math.Acos(math.Sin(point1.latitude)*math.Sin(point2.latitude)+math.Cos(point1.latitude)*math.Cos(point2.latitude)*math.Cos(point1.longitude-point2.longitude)) * 180 * 60) / math.Pi
 
 }
 
-func InitialBearing(lat1, lon1, lat2, lon2 float64) float64 {
-	dLon := (lon2 - lon1)
-	y := math.Sin(dLon) * math.Cos(lat2)
-	x := math.Cos(lat1)*math.Sin(lat2) - math.Sin(lat1)*math.Cos(lat2)*math.Cos(dLon)
-	// bearing in radians
+func InitialBearing(point1, point2 *Coordinate) float64 {
+	// calculate the initial true course from point1 to point2
+	dLon := (point2.longitude - point1.longitude)
+	y := math.Sin(dLon) * math.Cos(point2.latitude)
+	x := math.Cos(point1.latitude)*math.Sin(point2.latitude) - math.Sin(point1.latitude)*math.Cos(point2.latitude)*math.Cos(dLon)
+	// bearing calculated in radians
 	bearing := math.Atan2(y, x)
 	return bearing
 }
 
-func IntersectionRadials(lat1, lon1, bearing1, lat2, lon2, bearing2 float64) (lat3, lon3 float64, err error) {
+func IntersectionRadials(radial1, radial2 *Radial) (coordinate Coordinate, err error) {
 	// adapted from http://williams.best.vwh.net/avform.htm#Intersection
-	dLat := lat2 - lat1
-	dLon := lon2 - lon1
+	dLat := radial2.Coordinate.latitude - radial1.Coordinate.latitude
+	dLon := radial2.Coordinate.longitude - radial1.Coordinate.longitude
 
-	dist12 := 2 * math.Asin(math.Sqrt(math.Sin(dLat/2)*math.Sin(dLat/2)+math.Cos(lat1)*math.Cos(lat2)*math.Sin(dLon/2)*math.Sin(dLon/2)))
+	dist12 := 2 * math.Asin(math.Sqrt(math.Sin(dLat/2)*math.Sin(dLat/2)+math.Cos(radial1.Coordinate.latitude)*math.Cos(radial2.Coordinate.latitude)*math.Sin(dLon/2)*math.Sin(dLon/2)))
 	if dist12 == 0 {
-		return 0, 0, errors.New("dist 0")
+		return Coordinate{0, 0}, errors.New("dist 0")
 	}
 
 	// initial/final bearings between points
-	brngA := math.Acos((math.Sin(lat2) - math.Sin(lat1)*math.Cos(dist12)) / (math.Sin(dist12) * math.Cos(lat1)))
-	brngB := math.Acos((math.Sin(lat1) - math.Sin(lat2)*math.Cos(dist12)) / (math.Sin(dist12) * math.Cos(lat2)))
+	brngA := math.Acos((math.Sin(radial2.Coordinate.latitude) - math.Sin(radial1.Coordinate.latitude)*math.Cos(dist12)) / (math.Sin(dist12) * math.Cos(radial1.Coordinate.latitude)))
+	brngB := math.Acos((math.Sin(radial1.Coordinate.latitude) - math.Sin(radial2.Coordinate.latitude)*math.Cos(dist12)) / (math.Sin(dist12) * math.Cos(radial2.Coordinate.latitude)))
 
 	var brng12 float64
 	var brng21 float64
-	if math.Sin(lon2-lon1) > 0 {
+	if math.Sin(radial2.Coordinate.longitude-radial1.Coordinate.longitude) > 0 {
 		brng12 = brngA
 		brng21 = 2*math.Pi - brngB
 	} else {
@@ -84,39 +102,45 @@ func IntersectionRadials(lat1, lon1, bearing1, lat2, lon2, bearing2 float64) (la
 		brng21 = brngB
 	}
 
-	alpha1 := math.Mod((bearing1-brng12+math.Pi), (2*math.Pi)) - math.Pi // angle 2-1-3
-	alpha2 := math.Mod((brng21-bearing2+math.Pi), (2*math.Pi)) - math.Pi // angle 1-2-3
+	alpha1 := math.Mod((radial1.bearing-brng12+math.Pi), (2*math.Pi)) - math.Pi // angle 2-1-3
+	alpha2 := math.Mod((brng21-radial2.bearing+math.Pi), (2*math.Pi)) - math.Pi // angle 1-2-3
 
 	if math.Sin(alpha1) == 0 && math.Sin(alpha2) == 0 {
-		return 0, 0, errors.New("infinite intersections")
+		return Coordinate{0, 0}, errors.New("infinite intersections")
 	}
 	if math.Sin(alpha1)*math.Sin(alpha2) < 0 {
-		return 0, 0, errors.New("ambiguous intersection")
+		return Coordinate{0, 0}, errors.New("ambiguous intersection")
 	}
 
 	alpha3 := math.Acos(-math.Cos(alpha1)*math.Cos(alpha2) + math.Sin(alpha1)*math.Sin(alpha2)*math.Cos(dist12))
 	dist13 := math.Atan2(math.Sin(dist12)*math.Sin(alpha1)*math.Sin(alpha2), math.Cos(alpha2)+math.Cos(alpha1)*math.Cos(alpha3))
-	lat3 = math.Asin(math.Sin(lat1)*math.Cos(dist13) + math.Cos(lat1)*math.Sin(dist13)*math.Cos(bearing1))
-	dLon13 := math.Atan2(math.Sin(bearing1)*math.Sin(dist13)*math.Cos(lat1),
-		math.Cos(dist13)-math.Sin(lat1)*math.Sin(lat3))
-	lon3 = lon1 + dLon13
-	lon3 = math.Mod((lon3+3*math.Pi), (2*math.Pi)) - math.Pi // normalise to -180..+180º
+	// latitude of the intersection point
+	coordinate.latitude = math.Asin(math.Sin(radial1.Coordinate.latitude)*math.Cos(dist13) + math.Cos(radial1.Coordinate.latitude)*math.Sin(dist13)*math.Cos(radial1.bearing))
+	dLon13 := math.Atan2(math.Sin(radial1.bearing)*math.Sin(dist13)*math.Cos(radial1.Coordinate.latitude), math.Cos(dist13)-math.Sin(radial1.Coordinate.latitude)*math.Sin(coordinate.latitude))
+	// longitude of intersection point
+	coordinate.longitude = radial1.Coordinate.longitude + dLon13
+	coordinate.longitude = math.Mod((coordinate.longitude+3*math.Pi), (2*math.Pi)) - math.Pi // normalise to -180..+180º
 
-	return lat3, lon3, nil
+	return coordinate, nil
 
 }
 
-func CrossTrackError(lat1, lon1, lat2, lon2, lat3, lon3 float64) float64 {
-	dist_AD := NMToRadians(Distance(lat1, lon1, lat3, lon3))
-	crs_AD := math.Acos((math.Sin(lat3) - math.Sin(lat1)*math.Cos(dist_AD)) / (math.Sin(dist_AD) * math.Cos(lat1)))
-	initialBearing := InitialBearing(lat1, lon1, lat2, lon2)
+func CrossTrackError(point1, point2, point3 *Coordinate) float64 {
+	// distance between point A and point D
+	dist_AD := NMToRadians(Distance(point1, point3))
+	// course of point A to point D
+	crs_AD := math.Acos((math.Sin(point3.latitude) - math.Sin(point1.latitude)*math.Cos(dist_AD)) / (math.Sin(dist_AD) * math.Cos(point1.latitude)))
+	initialBearing := InitialBearing(point1, point2)
+	// crosstrack error
 	xtd := math.Asin(math.Sin(dist_AD) * math.Sin(crs_AD-initialBearing))
 	return xtd
 }
 
-func AlongTrackDistance(lat1, lon1, lon2, lat2, lat3, lon3 float64) float64 {
-	dist_AD := NMToRadians(Distance(lat1, lon1, lat3, lon3))
-	xtd := CrossTrackError(lat1, lon1, lat2, lon2, lat3, lon3)
+func AlongTrackDistance(point1, point2, point3 *Coordinate) float64 {
+	// distance between point A and point D
+	dist_AD := NMToRadians(Distance(point1, point3))
+	// along track distance
+	xtd := CrossTrackError(point1, point2, point3)
 	atd := math.Asin(math.Sqrt(math.Pow((math.Sin(dist_AD)), 2)-math.Pow((math.Sin(xtd)), 2)) / math.Cos(xtd))
 	return atd
 }

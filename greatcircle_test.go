@@ -22,65 +22,50 @@ var nauticalMilesRadiansStruct = []struct {
 }
 
 var distanceStruct = []struct {
-	lat1     float64
-	lon1     float64
-	lat2     float64
-	lon2     float64
+	point1   *Coordinate
+	point2   *Coordinate
 	distance float64
 }{
-	{0.592539, -2.066470, 0.709186, -1.287762, 2143.727060139769},
-	{0.65392, -2.13134, 0.65653, -2.11098, 56.218067123787776},
+	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, 2143.727060139769},
+	{&Coordinate{0.65392, -2.13134}, &Coordinate{0.65653, -2.11098}, 56.218067123787776},
 }
 
 var initialBearing = []struct {
-	lat1    float64
-	lon1    float64
-	lat2    float64
-	lon2    float64
+	point1  *Coordinate
+	point2  *Coordinate
 	bearing float64
 }{
-	{0.592539, -2.066470, 0.709186, -1.287762, 1.15003394270832},
-	{0.65392, -2.13134, 0.65653, -2.11098, 1.404312223088645},
-	{0.657782598, -2.126090282, 0.657302632, -2.131588069, -1.678971437808961},
-	{0.657302632, -2.131588069, 0.657782598, -2.126090282, 1.459261107627339},
+	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, 1.15003394270832},
+	{&Coordinate{0.65392, -2.13134}, &Coordinate{0.65653, -2.11098}, 1.404312223088645},
+	{&Coordinate{0.657782598, -2.126090282}, &Coordinate{0.657302632, -2.131588069}, -1.678971437808961},
+	{&Coordinate{0.657302632, -2.131588069}, &Coordinate{0.657782598, -2.126090282}, 1.459261107627339},
 }
 
 var intersectionRadials = []struct {
-	lat1     float64
-	lon1     float64
-	bearing1 float64
-	lat2     float64
-	lon2     float64
-	bearing2 float64
-	lat3     float64
-	lon3     float64
-	err      string
+	radial1 Radial
+	radial2 Radial
+	point3  Coordinate
+	err     string
 }{
-	{0.6573, -2.1316, 1.2392, 0.6568, -2.1109, 5.4280, 0.6611492323068847, -2.117252771823951, ""},
+	{Radial{Coordinate{0.6573, -2.1316}, 1.2392}, Radial{Coordinate{0.6568, -2.1109}, 5.4280}, Coordinate{0.6611492323068847, -2.117252771823951}, ""},
 }
 
 var crosstrack = []struct {
-	lat1     float64
-	lon1     float64
-	lat2     float64
-	lon2     float64
-	lat3     float64
-	lon3     float64
+	point1   *Coordinate
+	point2   *Coordinate
+	point3   *Coordinate
 	distance float64
 }{
-	{0.592539, -2.066470, 0.709186, -1.287762, 0.6021386, -2.033309, 0.0021674699088520496},
+	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, &Coordinate{0.6021386, -2.033309}, 0.0021674699088520496},
 }
 
 var alongtrack = []struct {
-	lat1     float64
-	lon1     float64
-	lat2     float64
-	lon2     float64
-	lat3     float64
-	lon3     float64
+	point1   *Coordinate
+	point2   *Coordinate
+	point3   *Coordinate
 	distance float64
 }{
-	{0.592539, -2.066470, 0.709186, -1.287762, 0.6021386, -2.033309, 0.005594254069336081},
+	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, &Coordinate{0.6021386, -2.033309}, 0.028969025967186944},
 }
 
 func TestDegreesToRadians(t *testing.T) {
@@ -121,7 +106,7 @@ func TestRadiansToNM(t *testing.T) {
 
 func TestDistance(t *testing.T) {
 	for _, v := range distanceStruct {
-		result := Distance(v.lat1, v.lon1, v.lat2, v.lon2)
+		result := Distance(v.point1, v.point2)
 		if result != v.distance {
 			t.Fatalf("Expected: %v, received %v", v.distance, result)
 		}
@@ -130,7 +115,7 @@ func TestDistance(t *testing.T) {
 
 func TestInitialBearing(t *testing.T) {
 	for _, v := range initialBearing {
-		result := InitialBearing(v.lat1, v.lon1, v.lat2, v.lon2)
+		result := InitialBearing(v.point1, v.point2)
 		if result != v.bearing {
 			t.Fatalf("Expected: %v, received %v", v.bearing, result)
 		}
@@ -139,16 +124,16 @@ func TestInitialBearing(t *testing.T) {
 
 func TestIntersection(t *testing.T) {
 	for _, v := range intersectionRadials {
-		reslat3, reslon3, reserr := IntersectionRadials(v.lat1, v.lon1, v.bearing1, v.lat2, v.lon2, v.bearing2)
-		if reslat3 != v.lat3 && reslon3 != v.lon3 && reserr == nil {
-			t.Fatalf("Expected: lat3: %v lon3: %v err: %v, received lat3: %v lon3: %v err: %v ", v.lat3, v.lon3, v.err, reslat3, reslon3, reserr)
+		resCoordinate, reserr := IntersectionRadials(&v.radial1, &v.radial2)
+		if resCoordinate != v.point3 && reserr == nil {
+			t.Fatalf("Expected: latitude: %v longitude: %v err: %v, received latitude: %v longitude: %v err: %v ", v.point3.latitude, v.point3.longitude, v.err, resCoordinate.latitude, resCoordinate.longitude, reserr)
 		}
 	}
 }
 
 func TestCrossTrackError(t *testing.T) {
 	for _, v := range crosstrack {
-		result := CrossTrackError(v.lat1, v.lon1, v.lat2, v.lon2, v.lat3, v.lon3)
+		result := CrossTrackError(v.point1, v.point2, v.point3)
 		if result != v.distance {
 			t.Fatalf("Expected: %v, received %v", v.distance, result)
 		}
@@ -157,7 +142,7 @@ func TestCrossTrackError(t *testing.T) {
 
 func TestAlongTrackDistance(t *testing.T) {
 	for _, v := range alongtrack {
-		result := AlongTrackDistance(v.lat1, v.lon1, v.lat2, v.lon2, v.lat3, v.lon3)
+		result := AlongTrackDistance(v.point1, v.point2, v.point3)
 		if result != v.distance {
 			t.Fatalf("Expected: %v, received %v", v.distance, result)
 		}
