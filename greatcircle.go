@@ -47,8 +47,8 @@ func RadiansToNM(radians float64) float64 {
 }
 
 func Distance(lat1, lon1, lat2, lon2 float64) float64 {
-	return ((math.Acos(math.Sin(lat1)*math.Sin(lat2) +
-		math.Cos(lat1)*math.Cos(lat2)*math.Cos(lon1-lon2))) * 180 * 60) / math.Pi
+	return (math.Acos(math.Sin(lat1)*math.Sin(lat2)+math.Cos(lat1)*math.Cos(lat2)*math.Cos(lon1-lon2)) * 180 * 60) / math.Pi
+
 }
 
 func InitialBearing(lat1, lon1, lat2, lon2 float64) float64 {
@@ -57,8 +57,7 @@ func InitialBearing(lat1, lon1, lat2, lon2 float64) float64 {
 	x := math.Cos(lat1)*math.Sin(lat2) - math.Sin(lat1)*math.Cos(lat2)*math.Cos(dLon)
 	// bearing in radians
 	bearing := math.Atan2(y, x)
-	// convert the bearing back to degrees to get the compas bearing
-	return math.Mod(RadiansToDegrees(bearing)+360, 360)
+	return bearing
 }
 
 func IntersectionRadials(lat1, lon1, bearing1, lat2, lon2, bearing2 float64) (lat3, lon3 float64, err error) {
@@ -105,4 +104,19 @@ func IntersectionRadials(lat1, lon1, bearing1, lat2, lon2, bearing2 float64) (la
 
 	return lat3, lon3, nil
 
+}
+
+func CrossTrackError(lat1, lon1, lat2, lon2, lat3, lon3 float64) float64 {
+	dist_AD := NMToRadians(Distance(lat1, lon1, lat3, lon3))
+	crs_AD := math.Acos((math.Sin(lat3) - math.Sin(lat1)*math.Cos(dist_AD)) / (math.Sin(dist_AD) * math.Cos(lat1)))
+	initialBearing := InitialBearing(lat1, lon1, lat2, lon2)
+	xtd := math.Asin(math.Sin(dist_AD) * math.Sin(crs_AD-initialBearing))
+	return xtd
+}
+
+func AlongTrackDistance(lat1, lon1, lon2, lat2, lat3, lon3 float64) float64 {
+	dist_AD := NMToRadians(Distance(lat1, lon1, lat3, lon3))
+	xtd := CrossTrackError(lat1, lon1, lat2, lon2, lat3, lon3)
+	atd := math.Asin(math.Sqrt(math.Pow((math.Sin(dist_AD)), 2)-math.Pow((math.Sin(xtd)), 2)) / math.Cos(xtd))
+	return atd
 }

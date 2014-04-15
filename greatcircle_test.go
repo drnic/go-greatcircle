@@ -39,10 +39,10 @@ var initialBearing = []struct {
 	lon2    float64
 	bearing float64
 }{
-	{0.592539, -2.066470, 0.709186, -1.287762, 65.89209121397664},
-	{0.65392, -2.13134, 0.65653, -2.11098, 80.46116350161344},
-	{0.657782598, -2.126090282, 0.657302632, -2.131588069, 263.80202269053495},
-	{0.657302632, -2.131588069, 0.657782598, -2.126090282, 83.60950267463232},
+	{0.592539, -2.066470, 0.709186, -1.287762, 1.15003394270832},
+	{0.65392, -2.13134, 0.65653, -2.11098, 1.404312223088645},
+	{0.657782598, -2.126090282, 0.657302632, -2.131588069, -1.678971437808961},
+	{0.657302632, -2.131588069, 0.657782598, -2.126090282, 1.459261107627339},
 }
 
 var intersectionRadials = []struct {
@@ -56,7 +56,31 @@ var intersectionRadials = []struct {
 	lon3     float64
 	err      string
 }{
-	{0.6573, -2.1316, 1.2392, 0.6568, -2.1109, 5.4280, 0.6612, -2.1172, ""},
+	{0.6573, -2.1316, 1.2392, 0.6568, -2.1109, 5.4280, 0.6611492323068847, -2.117252771823951, ""},
+}
+
+var crosstrack = []struct {
+	lat1     float64
+	lon1     float64
+	lat2     float64
+	lon2     float64
+	lat3     float64
+	lon3     float64
+	distance float64
+}{
+	{0.592539, -2.066470, 0.709186, -1.287762, 0.6021386, -2.033309, 0.0021674699088520496},
+}
+
+var alongtrack = []struct {
+	lat1     float64
+	lon1     float64
+	lat2     float64
+	lon2     float64
+	lat3     float64
+	lon3     float64
+	distance float64
+}{
+	{0.592539, -2.066470, 0.709186, -1.287762, 0.6021386, -2.033309, 0.005594254069336081},
 }
 
 func TestDegreesToRadians(t *testing.T) {
@@ -118,6 +142,24 @@ func TestIntersection(t *testing.T) {
 		reslat3, reslon3, reserr := IntersectionRadials(v.lat1, v.lon1, v.bearing1, v.lat2, v.lon2, v.bearing2)
 		if reslat3 != v.lat3 && reslon3 != v.lon3 && reserr == nil {
 			t.Fatalf("Expected: lat3: %v lon3: %v err: %v, received lat3: %v lon3: %v err: %v ", v.lat3, v.lon3, v.err, reslat3, reslon3, reserr)
+		}
+	}
+}
+
+func TestCrossTrackError(t *testing.T) {
+	for _, v := range crosstrack {
+		result := CrossTrackError(v.lat1, v.lon1, v.lat2, v.lon2, v.lat3, v.lon3)
+		if result != v.distance {
+			t.Fatalf("Expected: %v, received %v", v.distance, result)
+		}
+	}
+}
+
+func TestAlongTrackDistance(t *testing.T) {
+	for _, v := range alongtrack {
+		result := AlongTrackDistance(v.lat1, v.lon1, v.lat2, v.lon2, v.lat3, v.lon3)
+		if result != v.distance {
+			t.Fatalf("Expected: %v, received %v", v.distance, result)
 		}
 	}
 }
