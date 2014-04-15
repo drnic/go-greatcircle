@@ -78,6 +78,17 @@ var closestPoint = []struct {
 	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6692, -2.1193}, Coordinate{0.6687501299912878, -2.1189211323650383}},
 }
 
+var pointInReach = []struct {
+	point1      *Coordinate
+	point2      *Coordinate
+	point3      *Coordinate
+	distance    float64
+	isItInReach bool
+}{
+	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6692, -2.1193}, 18, true},
+	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6774, -2.1269}, 18, false},
+}
+
 func TestDegreesToRadians(t *testing.T) {
 
 	for _, v := range degreesRadians {
@@ -164,6 +175,15 @@ func TestClosest(t *testing.T) {
 		result := ClosestPoint(v.point1, v.point2, v.point3)
 		if result != v.coordinates {
 			t.Fatalf("Expected: %v, received %v", v.coordinates, result)
+		}
+	}
+}
+
+func TestPointInReach(t *testing.T) {
+	for _, v := range pointInReach {
+		result := PointInReach(v.point1, v.point2, v.point3, v.distance)
+		if result != v.isItInReach {
+			t.Fatalf("Expected: %v, received %v", v.isItInReach, result)
 		}
 	}
 }

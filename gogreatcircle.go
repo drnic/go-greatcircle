@@ -2,6 +2,7 @@ package gogreatcircle
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
 
@@ -43,7 +44,7 @@ func RadiansToNM(radians float64) float64 {
 }
 
 func Distance(point1, point2 *Coordinate) float64 {
-	// distance between 2 coordiantes
+	// distance between 2 coordiantes, returned in nautical miles
 	return (math.Acos(math.Sin(point1.latitude)*math.Sin(point2.latitude)+math.Cos(point1.latitude)*math.Cos(point2.latitude)*math.Cos(point1.longitude-point2.longitude)) * 180 * 60) / math.Pi
 
 }
@@ -134,4 +135,17 @@ func ClosestPoint(point1, point2, point3 *Coordinate) (coordinate Coordinate) {
 	coordinate.latitude = math.Asin(math.Sin(point1.latitude)*math.Cos(distance) + math.Cos(point1.latitude)*math.Sin(distance)*math.Cos(bearing))
 	coordinate.longitude = -(math.Mod(math.Abs(point1.longitude)-math.Asin(math.Sin(bearing)*math.Sin(distance)/math.Cos(coordinate.latitude))+math.Pi, 2*math.Pi) - math.Pi)
 	return coordinate
+}
+
+func PointInReach(point1, point2, point3 *Coordinate, distance float64) (response bool) {
+	// first we use the ClosestPoint function to get the first point and then compute
+	//the distance to the given point3 and compare it against the given distance
+	closestpoint := ClosestPoint(point1, point2, point3)
+	distanceBetweenPoints := Distance(&closestpoint, point3)
+	fmt.Println(distanceBetweenPoints)
+	if distanceBetweenPoints <= distance {
+		return true
+	} else {
+		return false
+	}
 }
