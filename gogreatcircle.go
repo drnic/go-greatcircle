@@ -17,26 +17,6 @@ type Radial struct {
 	bearing float64
 }
 
-func cross(v1, v2 vector) vector {
-	return vector{
-		v1[1]*v2[2] - v1[2]*v2[1],
-		v1[2]*v2[0] - v1[0]*v2[2],
-		v1[0]*v2[1] - v1[1]*v2[0],
-	}
-}
-
-func approxDistance(point1, point2 *Coordinate) float64 {
-	w := point2.longitude - point1.longitude
-	v := point1.latitude - point2.latitude
-	s := 2 * math.Asin(math.Sqrt((math.Sin(v/2)*math.Sin(v/2))+(math.Cos(point1.latitude)*math.Cos(point2.latitude)*math.Sin(w/2)*math.Sin(w/2))))
-	return s
-}
-
-func modlon(x float64) float64 {
-	//ensure longitude is +/-180
-	return math.Mod(x+math.Pi, 2*math.Pi) - math.Pi
-}
-
 func CoordinateToDecimalDegree(degrees, minutes, seconds float64) float64 {
 	// converting coordiantes from degrees, minutes, seconds into decimal degrees
 	return degrees + (minutes / 60) + (seconds / 3600)
@@ -142,5 +122,16 @@ func AlongTrackDistance(point1, point2, point3 *Coordinate) float64 {
 	// along track distance
 	xtd := CrossTrackError(point1, point2, point3)
 	atd := math.Asin(math.Sqrt(math.Pow((math.Sin(dist_AD)), 2)-math.Pow((math.Sin(xtd)), 2)) / math.Cos(xtd))
+	// http://williams.best.vwh.net/avform.htm#XTE - "Note that we can also use the above formulae to find the point of closest approach to the point D on the great circle through A and B"
 	return atd
+}
+
+func ClosestPoint(point1, point2, point3 *Coordinate) (coordinate Coordinate) {
+	// coordinates on the route from point1 to point2 of a given point3
+	// calculated using the formula from http://williams.best.vwh.net/avform.htm#Example - enroute waypoint
+	bearing := InitialBearing(point1, point2)
+	distance := AlongTrackDistance(point1, point2, point3)
+	coordinate.latitude = math.Asin(math.Sin(point1.latitude)*math.Cos(distance) + math.Cos(point1.latitude)*math.Sin(distance)*math.Cos(bearing))
+	coordinate.longitude = -(math.Mod(math.Abs(point1.longitude)-math.Asin(math.Sin(bearing)*math.Sin(distance)/math.Cos(coordinate.latitude))+math.Pi, 2*math.Pi) - math.Pi)
+	return coordinate
 }
