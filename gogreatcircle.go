@@ -132,13 +132,14 @@ func ClosestPoint(point1, point2, point3 *Coordinate) (coordinate Coordinate) {
 	bearing := InitialBearing(point1, point2)
 	distance := AlongTrackDistance(point1, point2, point3)
 	coordinate.latitude = math.Asin(math.Sin(point1.latitude)*math.Cos(distance) + math.Cos(point1.latitude)*math.Sin(distance)*math.Cos(bearing))
-	coordinate.longitude = -(math.Mod(math.Abs(point1.longitude)-math.Asin(math.Sin(bearing)*math.Sin(distance)/math.Cos(coordinate.latitude))+math.Pi, 2*math.Pi) - math.Pi)
+	earthRadius := NMToRadians(3440.07)
+	coordinate.longitude = point1.longitude + math.Atan2(math.Sin(bearing)*math.Sin(distance/earthRadius)*math.Cos(point1.latitude), math.Cos(distance/earthRadius)-math.Sin(point1.latitude)*math.Sin(point2.latitude))
 	return coordinate
 }
 
 func PointInReach(point1, point2, point3 *Coordinate, distance float64) (response bool) {
-	// first we use the ClosestPoint function to get the first point and then compute
-	//the distance to the given point3 and compare it against the given distance
+	// first we use the ClosestPoint function to get the first point (the closest to the provided point3)
+	// and then compute the distance to the given point3 and compare it against the given distance
 	closestpoint := ClosestPoint(point1, point2, point3)
 	distanceBetweenPoints := Distance(&closestpoint, point3)
 	if distanceBetweenPoints <= distance {

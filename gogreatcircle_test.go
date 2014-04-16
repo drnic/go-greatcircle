@@ -74,8 +74,9 @@ var closestPoint = []struct {
 	point3      *Coordinate
 	coordinates Coordinate
 }{
-	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, &Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.034339625370018}},
-	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6692, -2.1193}, Coordinate{0.6687501299912878, -2.1189211323650383}},
+	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, &Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.032017876228898}},
+	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6692, -2.1193}, Coordinate{0.6687501299912878, -2.1189029245160818}},
+	{&Coordinate{0.9427, 0.4892}, &Coordinate{0.9593, 0.8124}, &Coordinate{0.9595, 0.6364}, Coordinate{0.9565336530696015, 0.6373752108069288}},
 }
 
 var pointInReach = []struct {
@@ -85,8 +86,9 @@ var pointInReach = []struct {
 	distance    float64
 	isItInReach bool
 }{
-	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6692, -2.1193}, 18, true},
+	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6692, -2.1193}, 30, true},
 	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6774, -2.1269}, 18, false},
+	{&Coordinate{0.9427, 0.4892}, &Coordinate{0.9593, 0.8124}, &Coordinate{0.9595, 0.6364}, 1, false},
 }
 
 func TestDegreesToRadians(t *testing.T) {
