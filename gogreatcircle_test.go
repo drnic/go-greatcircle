@@ -91,6 +91,17 @@ var pointInReach = []struct {
 	{&Coordinate{0.9427, 0.4892}, &Coordinate{0.9593, 0.8124}, &Coordinate{0.9595, 0.6364}, 1, false},
 }
 
+var pointsInReach = []struct {
+	point1       *Coordinate
+	point2       *Coordinate
+	points       []*Coordinate
+	distance     float64
+	pointswithin []Coordinate
+}{
+	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, []*Coordinate{&Coordinate{0.6692, -2.1193}, &Coordinate{0.6673, -2.1239}, &Coordinate{0.6747, -2.1279}}, 30, []Coordinate{Coordinate{0.6692, -2.1193}, Coordinate{0.6673, -2.1239}}},
+	{&Coordinate{0.9427, 0.4892}, &Coordinate{0.9593, 0.8124}, []*Coordinate{&Coordinate{0.9595, 0.6364}, &Coordinate{0.9654, 0.6665}, &Coordinate{1.0075, 0.6750}}, 28, []Coordinate{Coordinate{0.9595, 0.6364}, Coordinate{0.9654, 0.6665}}},
+}
+
 func TestDegreesToRadians(t *testing.T) {
 
 	for _, v := range degreesRadians {
@@ -187,5 +198,49 @@ func TestPointInReach(t *testing.T) {
 		if result != v.isItInReach {
 			t.Fatalf("Expected: %v, received %v", v.isItInReach, result)
 		}
+	}
+}
+
+// helper function to find difference in 2 arrays
+func difference(slice1 []Coordinate, slice2 []Coordinate) []Coordinate {
+	var diff []Coordinate
+
+	// Loop two times, first to find slice1 strings not in slice2,
+	// second loop to find slice2 strings not in slice1
+	for i := 0; i < 2; i++ {
+		for _, s1 := range slice1 {
+			found := false
+			for _, s2 := range slice2 {
+				if s1 == s2 {
+					found = true
+					break
+				}
+			}
+			// String not found. We add it to return slice
+			if !found {
+				diff = append(diff, s1)
+			}
+		}
+		// Swap the slices, only if it was the first loop
+		if i == 0 {
+			slice1, slice2 = slice2, slice1
+		}
+	}
+
+	return diff
+}
+
+func TestPointsInReach(t *testing.T) {
+	for _, v := range pointsInReach {
+		results := PointsInReach(v.point1, v.point2, v.distance, v.points)
+		diff := difference(results, v.pointswithin)
+		if len(diff) > 0 {
+			t.Fatalf("Expected no extra coordinates, received %v", diff)
+		}
+		// simpler method to test
+		// if len(results) != len(v.pointswithin) {
+		// 	t.Fatalf("Expected %v points , received %v", len(results), len(v.pointswithin))
+		// }
+
 	}
 }

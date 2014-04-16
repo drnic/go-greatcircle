@@ -3,6 +3,7 @@ package gogreatcircle
 import (
 	"errors"
 	"math"
+	"sort"
 )
 
 type vector [3]float64
@@ -137,14 +138,53 @@ func ClosestPoint(point1, point2, point3 *Coordinate) (coordinate Coordinate) {
 	return coordinate
 }
 
-func PointInReach(point1, point2, point3 *Coordinate, distance float64) (response bool) {
+// helper function for Pointinreach and Pointsinreach
+
+func pointOfReachDistance(point1, point2, point3 *Coordinate) float64 {
 	// first we use the ClosestPoint function to get the first point (the closest to the provided point3)
 	// and then compute the distance to the given point3 and compare it against the given distance
 	closestpoint := ClosestPoint(point1, point2, point3)
 	distanceBetweenPoints := Distance(&closestpoint, point3)
+
+	return distanceBetweenPoints
+}
+
+func PointInReach(point1, point2, point3 *Coordinate, distance float64) (response bool) {
+	// using the helper function above we find the point3 in reach and get the distance
+	// of to point3. Comparing the expected distance with the provided distance
+	//the function returns true if point3 is in range, else false
+	distanceBetweenPoints := pointOfReachDistance(point1, point2, point3)
 	if distanceBetweenPoints <= distance {
 		return true
 	} else {
 		return false
 	}
+}
+
+func PointsInReach(point1, point2 *Coordinate, distance float64, points []*Coordinate) []Coordinate {
+	// providing an array of points, the helper function is used to get the distance
+	// to those points and then compared with the distance provided.
+	// If the points are within distance, they are returned sorted
+	pointsInReach := make(map[float64]Coordinate)
+	var sortedPointsInReach []Coordinate
+
+	for _, point := range points {
+		distanceBetweenPoints := pointOfReachDistance(point1, point2, point)
+		if distanceBetweenPoints <= distance {
+			pointsInReach[distanceBetweenPoints] = *point
+		}
+
+	}
+	keys := make([]float64, 0, len(pointsInReach))
+	for k := range pointsInReach {
+		keys = append(keys, k)
+	}
+	sort.Float64s(keys)
+
+	for _, k := range keys {
+		sortedPointsInReach = append(sortedPointsInReach, pointsInReach[k])
+	}
+
+	return sortedPointsInReach
+
 }
