@@ -1,5 +1,11 @@
 package gogreatcircle
 
+/*
+Library for various Earth coordinate & Great Circle calcuations.
+
+North latitudes and West longitudes are treated as positive, and South latitudes and East longitudes negative
+*/
+
 import (
 	"errors"
 	"math"
