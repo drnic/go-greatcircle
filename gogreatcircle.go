@@ -38,7 +38,6 @@ func DegreeUnitsToDecimalDegree(degrees, minutes, seconds float64) float64 {
 DegreesToRadians converts a decimal degree into radians.
 */
 func DegreesToRadians(degrees float64) float64 {
-	// converting decimal degrees to radians
 	return degrees * (math.Pi / 180)
 }
 
@@ -46,7 +45,6 @@ func DegreesToRadians(degrees float64) float64 {
 RadiansToDegrees converts a radian into decimal degrees.
 */
 func RadiansToDegrees(radians float64) float64 {
-	// converting radians to decimal degrees
 	return radians * (180 / math.Pi)
 }
 
@@ -54,7 +52,6 @@ func RadiansToDegrees(radians float64) float64 {
 NMToRadians converts nautical miles into radians.
 */
 func NMToRadians(nauticalMiles float64) float64 {
-	// converting nautical miles to radians
 	return (math.Pi / (180 * 60)) * nauticalMiles
 }
 
@@ -62,18 +59,18 @@ func NMToRadians(nauticalMiles float64) float64 {
 RadiansToNM converts radians into nautical miles.
 */
 func RadiansToNM(radians float64) float64 {
-	// converting radians to nautical miles
 	return ((180 * 60) / math.Pi) * radians
 }
 
 /*
 Distance calculates the shortest distance between two Coordinates.
 
+Result is in nautical miles.
+
 The shortest distance between two coordinates is the arc across the
 great circle that includes the two points.
 */
 func Distance(point1, point2 Coordinate) float64 {
-	// distance between 2 coordiantes, returned in nautical miles
 	return (math.Acos(math.Sin(point1.Latitude)*math.Sin(point2.Latitude)+math.Cos(point1.Latitude)*math.Cos(point2.Latitude)*math.Cos(point1.Longitude-point2.Longitude)) * 180 * 60) / math.Pi
 
 }
@@ -82,6 +79,8 @@ func Distance(point1, point2 Coordinate) float64 {
 InitialBearing provides the initial true course from a point to commence
 a journey along a great circle to another point on that great
 circle.
+
+Result is in radians.
 
 The bearing being used whilst travelling along a great circle
 will change. This function returns the bearing at point1.
