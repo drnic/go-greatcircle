@@ -4,14 +4,19 @@ import (
 	"testing"
 )
 
+var latKSFO, longKSFO = DegreeUnitsToDecimalDegree(37, 37, 00), DegreeUnitsToDecimalDegree(-122, 22, 00)
+var latKSJC, longKSJC = DegreeUnitsToDecimalDegree(37, 22, 00), DegreeUnitsToDecimalDegree(-121, 55, 00)
+
+var coordKLAX = Coordinate{0.592539, -2.066470}
+
 var degreesRadians = []struct {
 	decimaldegrees float64
 	radians        float64
 }{
-	{CoordinateToDecimalDegree(37, 37, 00), 0.6565346869585337},
-	{CoordinateToDecimalDegree(37, 22, 00), 0.6521713638285478},
-	{CoordinateToDecimalDegree(48, 26.57, 00), 0.8454869406615264},
-	{CoordinateToDecimalDegree(37, 42.66, 00), 0.6581811142195816},
+	{latKSFO, 0.6565346869585337},
+	{latKSJC, 0.6521713638285478},
+	{DegreeUnitsToDecimalDegree(48, 26.57, 00), 0.8454869406615264},
+	{DegreeUnitsToDecimalDegree(37, 42.66, 00), 0.6581811142195816},
 }
 
 var nauticalMilesRadiansStruct = []struct {
@@ -26,7 +31,7 @@ var distanceStruct = []struct {
 	point2   Coordinate
 	distance float64
 }{
-	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, 2143.727060139769},
+	{coordKLAX, Coordinate{0.709186, -1.287762}, 2143.727060139769},
 	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 56.218067123787776},
 }
 
@@ -35,7 +40,7 @@ var initialBearing = []struct {
 	point2  Coordinate
 	bearing float64
 }{
-	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, 1.15003394270832},
+	{coordKLAX, Coordinate{0.709186, -1.287762}, 1.15003394270832},
 	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 1.404312223088645},
 	{Coordinate{0.657782598, -2.126090282}, Coordinate{0.657302632, -2.131588069}, -1.678971437808961},
 	{Coordinate{0.657302632, -2.131588069}, Coordinate{0.657782598, -2.126090282}, 1.459261107627339},
@@ -56,7 +61,7 @@ var crosstrack = []struct {
 	point3   Coordinate
 	distance float64
 }{
-	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, 0.0021674699088520496},
+	{coordKLAX, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, 0.0021674699088520496},
 }
 
 var alongtrack = []struct {
@@ -65,7 +70,7 @@ var alongtrack = []struct {
 	point3   Coordinate
 	distance float64
 }{
-	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, 0.028969025967186944},
+	{coordKLAX, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, 0.028969025967186944},
 }
 
 var closestPoint = []struct {
@@ -74,7 +79,7 @@ var closestPoint = []struct {
 	point3      Coordinate
 	coordinates Coordinate
 }{
-	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.032017876228898}},
+	{coordKLAX, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.032017876228898}},
 	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, Coordinate{0.6692, -2.1193}, Coordinate{0.6687501299912878, -2.1189029245160818}},
 	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, Coordinate{0.9595, 0.6364}, Coordinate{0.9565336530696015, 0.6373752108069288}},
 }
@@ -103,7 +108,6 @@ var pointsInReach = []struct {
 }
 
 func TestDegreesToRadians(t *testing.T) {
-
 	for _, v := range degreesRadians {
 		result := DegreesToRadians(v.decimaldegrees)
 		if result != v.radians {
