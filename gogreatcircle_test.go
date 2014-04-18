@@ -10,7 +10,7 @@ var latKSFO, longKSFO = DegreeUnitsToDecimalDegree(37, 37, 00), DegreeUnitsToDec
 var latKSJC, longKSJC = DegreeUnitsToDecimalDegree(37, 22, 00), DegreeUnitsToDecimalDegree(121, 55, 00)
 var latKLAX, longKLAX = DegreeUnitsToDecimalDegree(33, 35, 00), DegreeUnitsToDecimalDegree(118, 24, 00)
 var latKJFK, longKJFK = DegreeUnitsToDecimalDegree(40, 38, 00), DegreeUnitsToDecimalDegree(73, 47, 00)
-var latKMOD, longKMOD = DegreeUnitsToDecimalDegree(37, 37, 00), DegreeUnitsToDecimalDegree(120, 57, 00)
+var latKMOD, longKMOD = DegreeUnitsToDecimalDegree(37, 37, 33), DegreeUnitsToDecimalDegree(120, 57, 16)
 var latKMAE, longKMAE = DegreeUnitsToDecimalDegree(36, 59, 00), DegreeUnitsToDecimalDegree(120, 7, 00)
 
 var coordKSFO = NamedCoordinate{Coordinate{DegreesToRadians(latKSFO), DegreesToRadians(longKSFO)}, "KSFO"}
@@ -18,15 +18,21 @@ var coordKSJC = NamedCoordinate{Coordinate{DegreesToRadians(latKSJC), DegreesToR
 var coordKLAX = NamedCoordinate{Coordinate{DegreesToRadians(latKLAX), DegreesToRadians(longKLAX)}, "KLAX"}
 var coordKJFK = NamedCoordinate{Coordinate{DegreesToRadians(latKJFK), DegreesToRadians(longKJFK)}, "KJFK"}
 var coordKMOD = NamedCoordinate{Coordinate{DegreesToRadians(latKMOD), DegreesToRadians(longKMOD)}, "KMOD"}
-var coordKMAE = NamedCoordinate{Coordinate{DegreesToRadians(latKMAE), DegreesToRadians(longKMAE)}, "KMA"}
+var coordKMAE = NamedCoordinate{Coordinate{DegreesToRadians(latKMAE), DegreesToRadians(longKMAE)}, "KMAE"}
 
-func TestJFK(t *testing.T) {
+var coordsByName = map[string]NamedCoordinate{
+	"KSFO": coordKSFO,
+	"KSJC": coordKSJC,
+	"KLAX": coordKLAX,
+	"KJFK": coordKJFK,
+	"KMOD": coordKMOD,
+	"KMAE": coordKMAE,
+}
 
-	fmt.Printf("%v\n", coordKJFK)
-	fmt.Printf("%v\n", Coordinate{0.709186, -1.287762}) // why -ve radians?
-
-	fmt.Printf("%v\n", coordKMOD)
-	fmt.Printf("%v\n", Coordinate{0.65653, -2.11098})
+func TestShowKnownCoordinates(t *testing.T) {
+	for name, coord := range coordsByName {
+		fmt.Printf("%s: %v\n", name, coord)
+	}
 }
 
 var degreesRadians = []struct {
@@ -46,25 +52,25 @@ var nauticalMilesRadiansStruct = []struct {
 }
 
 var distanceStruct = []struct {
-	point1   Coordinate
-	point2   Coordinate
-	distance float64
+	point1Name string
+	point2Name string
+	distance   float64
 }{
-	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 56.218067123787776},
-	{coordKMOD.Coord, coordKMAE.Coord, 56.218067123787776},
-	{coordKMAE.Coord, coordKMOD.Coord, 56.218067123787776},
-	{coordKLAX.Coord, coordKJFK.Coord, 2143.727060139769},
+	{"KMOD", "KMAE", 55.5},
+	{"KMAE", "KMOD", 55.5},
+	{"KLAX", "KJFK", 2150.6},
+	{"KJFK", "KLAX", 2150.6},
 }
 
 var initialBearing = []struct {
-	point1  Coordinate
-	point2  Coordinate
-	bearing float64
+	point1Name string
+	point2Name string
+	bearing    float64
 }{
-	{coordKLAX.Coord, coordKJFK.Coord, 1.15003394270832},
-	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 1.404312223088645},
-	{Coordinate{0.657782598, -2.126090282}, Coordinate{0.657302632, -2.131588069}, -1.678971437808961},
-	{Coordinate{0.657302632, -2.131588069}, Coordinate{0.657782598, -2.126090282}, 1.459261107627339},
+	{"KMOD", "KMAE", DegreesToRadians(133)},
+	{"KMAE", "KMOD", DegreesToRadians(314)},
+	{"KLAX", "KJFK", DegreesToRadians(274)},
+	{"KJFK", "KLAX", DegreesToRadians(66)},
 }
 
 var intersectionRadials = []struct {
@@ -165,18 +171,20 @@ func TestRadiansToNM(t *testing.T) {
 
 func TestDistance(t *testing.T) {
 	for _, v := range distanceStruct {
-		result := Distance(v.point1, v.point2)
-		if result != v.distance {
-			t.Fatalf("Expected: %v, received %v", v.distance, result)
+		point1, point2 := coordsByName[v.point1Name], coordsByName[v.point2Name]
+		result := Distance(point1.Coord, point2.Coord)
+		if math.Abs(result-v.distance) > 0.1 {
+			t.Fatalf("From %s to %s expected: %v, received %v", v.point1Name, v.point2Name, v.distance, result)
 		}
 	}
 }
 
 func TestInitialBearing(t *testing.T) {
 	for _, v := range initialBearing {
-		result := InitialBearing(v.point1, v.point2)
-		if result != v.bearing {
-			t.Fatalf("Expected: %v, received %v", v.bearing, result)
+		point1, point2 := coordsByName[v.point1Name], coordsByName[v.point2Name]
+		result := InitialBearing(point1.Coord, point2.Coord)
+		if math.Abs(result-v.bearing) > 0.5 {
+			t.Fatalf("From %s to %s expected: %v, received %v", v.point1Name, v.point2Name, v.bearing, result)
 		}
 	}
 }
