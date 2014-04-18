@@ -100,9 +100,22 @@ The bearing being used whilst travelling along a great circle
 will change. This function returns the bearing at point1.
 */
 func InitialBearing(point1, point2 Coordinate) float64 {
-	distance := NMToRadians(Distance(point1, point2))
-	tcl := math.Acos((math.Sin(point2.Latitude) - math.Sin(point1.Latitude)*math.Cos(distance)) / (math.Sin(distance) * math.Cos(point1.Latitude)))
-	return tcl
+	var tc float64
+	var argacos float64
+	d := math.Acos(math.Sin(point1.Latitude)*math.Sin(point2.Latitude) + math.Cos(point1.Latitude)*math.Cos(point2.Latitude)*math.Cos(point1.Longitude-point2.Longitude))
+	if (d == 0.) || (point1.Latitude == -(math.Pi/180)*90.) {
+		tc = 2 * math.Pi
+	} else if point1.Latitude == (math.Pi/180)*90. {
+		tc = math.Pi
+	} else {
+		argacos = (math.Sin(point2.Latitude) - math.Sin(point1.Latitude)*math.Cos(d)) / (math.Sin(d) * math.Cos(point1.Latitude))
+		if math.Sin(point2.Longitude-point1.Longitude) < 0 {
+			tc = math.Acos(argacos)
+		} else {
+			tc = 2*math.Pi - math.Acos(argacos)
+		}
+	}
+	return tc
 }
 
 /*
