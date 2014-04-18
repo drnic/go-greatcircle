@@ -58,8 +58,8 @@ var distanceStruct = []struct {
 }{
 	{"KMOD", "KMAE", 55.5},
 	{"KMAE", "KMOD", 55.5},
-	{"KLAX", "KJFK", 2150.6},
-	{"KJFK", "KLAX", 2150.6},
+	{"KLAX", "KJFK", 2143.7},
+	{"KJFK", "KLAX", 2143.7},
 }
 
 var initialBearing = []struct {
