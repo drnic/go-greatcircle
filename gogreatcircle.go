@@ -41,13 +41,13 @@ func RadiansToNM(radians float64) float64 {
 	return ((180 * 60) / math.Pi) * radians
 }
 
-func Distance(point1, point2 *Coordinate) float64 {
+func Distance(point1, point2 Coordinate) float64 {
 	// distance between 2 coordiantes, returned in nautical miles
 	return (math.Acos(math.Sin(point1.Latitude)*math.Sin(point2.Latitude)+math.Cos(point1.Latitude)*math.Cos(point2.Latitude)*math.Cos(point1.Longitude-point2.Longitude)) * 180 * 60) / math.Pi
 
 }
 
-func InitialBearing(point1, point2 *Coordinate) float64 {
+func InitialBearing(point1, point2 Coordinate) float64 {
 	// calculate the initial true course from point1 to point2
 	dLon := (point2.Longitude - point1.Longitude)
 	y := math.Sin(dLon) * math.Cos(point2.Latitude)
@@ -57,7 +57,7 @@ func InitialBearing(point1, point2 *Coordinate) float64 {
 	return Bearing
 }
 
-func IntersectionRadials(radial1, radial2 *Radial) (coordinate Coordinate, err error) {
+func IntersectionRadials(radial1, radial2 Radial) (coordinate Coordinate, err error) {
 	// adapted from http://williams.best.vwh.net/avform.htm#Intersection
 	dLat := radial2.Coordinate.Latitude - radial1.Coordinate.Latitude
 	dLon := radial2.Coordinate.Longitude - radial1.Coordinate.Longitude
@@ -104,7 +104,7 @@ func IntersectionRadials(radial1, radial2 *Radial) (coordinate Coordinate, err e
 
 }
 
-func CrossTrackError(point1, point2, point3 *Coordinate) float64 {
+func CrossTrackError(point1, point2, point3 Coordinate) float64 {
 	// distance between point A and point D
 	dist_AD := NMToRadians(Distance(point1, point3))
 	// course of point A to point D
@@ -115,7 +115,7 @@ func CrossTrackError(point1, point2, point3 *Coordinate) float64 {
 	return xtd
 }
 
-func AlongTrackDistance(point1, point2, point3 *Coordinate) float64 {
+func AlongTrackDistance(point1, point2, point3 Coordinate) float64 {
 	// distance between point A and point D
 	dist_AD := NMToRadians(Distance(point1, point3))
 	// along track distance
@@ -125,7 +125,7 @@ func AlongTrackDistance(point1, point2, point3 *Coordinate) float64 {
 	return atd
 }
 
-func ClosestPoint(point1, point2, point3 *Coordinate) (coordinate Coordinate) {
+func ClosestPoint(point1, point2, point3 Coordinate) (coordinate Coordinate) {
 	// coordinates on the route from point1 to point2 of a given point3
 	// calculated using the formula from http://williams.best.vwh.net/avform.htm#Example - enroute waypoint
 	Bearing := InitialBearing(point1, point2)
@@ -138,16 +138,16 @@ func ClosestPoint(point1, point2, point3 *Coordinate) (coordinate Coordinate) {
 
 // helper function for Pointinreach and Pointsinreach
 
-func pointOfReachDistance(point1, point2, point3 *Coordinate) float64 {
+func pointOfReachDistance(point1, point2, point3 Coordinate) float64 {
 	// first we use the ClosestPoint function to get the first point (the closest to the provided point3)
 	// and then compute the distance to the given point3 and compare it against the given distance
 	closestpoint := ClosestPoint(point1, point2, point3)
-	distanceBetweenPoints := Distance(&closestpoint, point3)
+	distanceBetweenPoints := Distance(closestpoint, point3)
 
 	return distanceBetweenPoints
 }
 
-func PointInReach(point1, point2, point3 *Coordinate, distance float64) (response bool) {
+func PointInReach(point1, point2, point3 Coordinate, distance float64) (response bool) {
 	// using the helper function above we find the point3 in reach and get the distance
 	// of to point3. Comparing the expected distance with the provided distance
 	//the function returns true if point3 is in range, else false
@@ -159,7 +159,7 @@ func PointInReach(point1, point2, point3 *Coordinate, distance float64) (respons
 	}
 }
 
-func PointsInReach(point1, point2 *Coordinate, distance float64, points []*Coordinate) []Coordinate {
+func PointsInReach(point1, point2 Coordinate, distance float64, points []Coordinate) []Coordinate {
 	// providing an array of points, the helper function is used to get the distance
 	// to those points and then compared with the distance provided.
 	// If the points are within distance, they are returned sorted
@@ -169,7 +169,7 @@ func PointsInReach(point1, point2 *Coordinate, distance float64, points []*Coord
 	for _, point := range points {
 		distanceBetweenPoints := pointOfReachDistance(point1, point2, point)
 		if distanceBetweenPoints <= distance {
-			pointsInReach[distanceBetweenPoints] = *point
+			pointsInReach[distanceBetweenPoints] = point
 		}
 
 	}

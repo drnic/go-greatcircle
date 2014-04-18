@@ -22,23 +22,23 @@ var nauticalMilesRadiansStruct = []struct {
 }
 
 var distanceStruct = []struct {
-	point1   *Coordinate
-	point2   *Coordinate
+	point1   Coordinate
+	point2   Coordinate
 	distance float64
 }{
-	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, 2143.727060139769},
-	{&Coordinate{0.65392, -2.13134}, &Coordinate{0.65653, -2.11098}, 56.218067123787776},
+	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, 2143.727060139769},
+	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 56.218067123787776},
 }
 
 var initialBearing = []struct {
-	point1  *Coordinate
-	point2  *Coordinate
+	point1  Coordinate
+	point2  Coordinate
 	bearing float64
 }{
-	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, 1.15003394270832},
-	{&Coordinate{0.65392, -2.13134}, &Coordinate{0.65653, -2.11098}, 1.404312223088645},
-	{&Coordinate{0.657782598, -2.126090282}, &Coordinate{0.657302632, -2.131588069}, -1.678971437808961},
-	{&Coordinate{0.657302632, -2.131588069}, &Coordinate{0.657782598, -2.126090282}, 1.459261107627339},
+	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, 1.15003394270832},
+	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 1.404312223088645},
+	{Coordinate{0.657782598, -2.126090282}, Coordinate{0.657302632, -2.131588069}, -1.678971437808961},
+	{Coordinate{0.657302632, -2.131588069}, Coordinate{0.657782598, -2.126090282}, 1.459261107627339},
 }
 
 var intersectionRadials = []struct {
@@ -51,55 +51,55 @@ var intersectionRadials = []struct {
 }
 
 var crosstrack = []struct {
-	point1   *Coordinate
-	point2   *Coordinate
-	point3   *Coordinate
+	point1   Coordinate
+	point2   Coordinate
+	point3   Coordinate
 	distance float64
 }{
-	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, &Coordinate{0.6021386, -2.033309}, 0.0021674699088520496},
+	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, 0.0021674699088520496},
 }
 
 var alongtrack = []struct {
-	point1   *Coordinate
-	point2   *Coordinate
-	point3   *Coordinate
+	point1   Coordinate
+	point2   Coordinate
+	point3   Coordinate
 	distance float64
 }{
-	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, &Coordinate{0.6021386, -2.033309}, 0.028969025967186944},
+	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, 0.028969025967186944},
 }
 
 var closestPoint = []struct {
-	point1      *Coordinate
-	point2      *Coordinate
-	point3      *Coordinate
+	point1      Coordinate
+	point2      Coordinate
+	point3      Coordinate
 	coordinates Coordinate
 }{
-	{&Coordinate{0.592539, -2.066470}, &Coordinate{0.709186, -1.287762}, &Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.032017876228898}},
-	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6692, -2.1193}, Coordinate{0.6687501299912878, -2.1189029245160818}},
-	{&Coordinate{0.9427, 0.4892}, &Coordinate{0.9593, 0.8124}, &Coordinate{0.9595, 0.6364}, Coordinate{0.9565336530696015, 0.6373752108069288}},
+	{Coordinate{0.592539, -2.066470}, Coordinate{0.709186, -1.287762}, Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.032017876228898}},
+	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, Coordinate{0.6692, -2.1193}, Coordinate{0.6687501299912878, -2.1189029245160818}},
+	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, Coordinate{0.9595, 0.6364}, Coordinate{0.9565336530696015, 0.6373752108069288}},
 }
 
 var pointInReach = []struct {
-	point1      *Coordinate
-	point2      *Coordinate
-	point3      *Coordinate
+	point1      Coordinate
+	point2      Coordinate
+	point3      Coordinate
 	distance    float64
 	isItInReach bool
 }{
-	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6692, -2.1193}, 30, true},
-	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, &Coordinate{0.6774, -2.1269}, 18, false},
-	{&Coordinate{0.9427, 0.4892}, &Coordinate{0.9593, 0.8124}, &Coordinate{0.9595, 0.6364}, 1, false},
+	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, Coordinate{0.6692, -2.1193}, 30, true},
+	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, Coordinate{0.6774, -2.1269}, 18, false},
+	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, Coordinate{0.9595, 0.6364}, 1, false},
 }
 
 var pointsInReach = []struct {
-	point1       *Coordinate
-	point2       *Coordinate
-	points       []*Coordinate
+	point1       Coordinate
+	point2       Coordinate
+	points       []Coordinate
 	distance     float64
 	pointswithin []Coordinate
 }{
-	{&Coordinate{0.6629, -2.1301}, &Coordinate{0.6717, -2.1132}, []*Coordinate{&Coordinate{0.6692, -2.1193}, &Coordinate{0.6673, -2.1239}, &Coordinate{0.6747, -2.1279}}, 30, []Coordinate{Coordinate{0.6692, -2.1193}, Coordinate{0.6673, -2.1239}}},
-	{&Coordinate{0.9427, 0.4892}, &Coordinate{0.9593, 0.8124}, []*Coordinate{&Coordinate{0.9595, 0.6364}, &Coordinate{0.9654, 0.6665}, &Coordinate{1.0075, 0.6750}}, 28, []Coordinate{Coordinate{0.9595, 0.6364}, Coordinate{0.9654, 0.6665}}},
+	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, []Coordinate{Coordinate{0.6692, -2.1193}, Coordinate{0.6673, -2.1239}, Coordinate{0.6747, -2.1279}}, 30, []Coordinate{Coordinate{0.6692, -2.1193}, Coordinate{0.6673, -2.1239}}},
+	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, []Coordinate{Coordinate{0.9595, 0.6364}, Coordinate{0.9654, 0.6665}, Coordinate{1.0075, 0.6750}}, 28, []Coordinate{Coordinate{0.9595, 0.6364}, Coordinate{0.9654, 0.6665}}},
 }
 
 func TestDegreesToRadians(t *testing.T) {
@@ -158,7 +158,7 @@ func TestInitialBearing(t *testing.T) {
 
 func TestIntersection(t *testing.T) {
 	for _, v := range intersectionRadials {
-		resCoordinate, reserr := IntersectionRadials(&v.radial1, &v.radial2)
+		resCoordinate, reserr := IntersectionRadials(v.radial1, v.radial2)
 		if resCoordinate != v.point3 && reserr == nil {
 			t.Fatalf("Expected: latitude: %v longitude: %v err: %v, received latitude: %v longitude: %v err: %v ", v.point3.Latitude, v.point3.Longitude, v.err, resCoordinate.Latitude, resCoordinate.Longitude, reserr)
 		}
