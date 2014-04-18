@@ -100,12 +100,9 @@ The bearing being used whilst travelling along a great circle
 will change. This function returns the bearing at point1.
 */
 func InitialBearing(point1, point2 Coordinate) float64 {
-	dLon := (point2.Longitude - point1.Longitude)
-	y := math.Sin(dLon) * math.Cos(point2.Latitude)
-	x := math.Cos(point1.Latitude)*math.Sin(point2.Latitude) - math.Sin(point1.Latitude)*math.Cos(point2.Latitude)*math.Cos(dLon)
-	// bearing calculated in radians
-	Bearing := math.Atan2(y, x)
-	return Bearing
+	distance := NMToRadians(Distance(point1, point2))
+	tcl := math.Acos((math.Sin(point2.Latitude) - math.Sin(point1.Latitude)*math.Cos(distance)) / (math.Sin(distance) * math.Cos(point1.Latitude)))
+	return tcl
 }
 
 /*
@@ -115,54 +112,39 @@ would interset.
 Adapted from http://williams.best.vwh.net/avform.htm#Intersection
 */
 func IntersectionRadials(radial1, radial2 Radial) (coordinate Coordinate, err error) {
-	dLat := radial2.Coordinate.Latitude - radial1.Coordinate.Latitude
-	dLon := radial2.Coordinate.Longitude - radial1.Coordinate.Longitude
+	dst12 := 2 * math.Asin(math.Sqrt(math.Pow((math.Sin((radial1.Latitude-radial2.Latitude)/2)), 2)+
+		math.Cos(radial1.Latitude)*math.Cos(radial2.Latitude)*math.Pow(math.Sin((radial1.Longitude-radial2.Longitude)/2), 2)))
+	// // initial/final bearings between points
+	crs13 := InitialBearing(radial1.Coordinate, radial2.Coordinate)
+	crs23 := InitialBearing(radial2.Coordinate, radial1.Coordinate)
 
-	dist12 := 2 * math.Asin(math.Sqrt(math.Sin(dLat/2)*math.Sin(dLat/2)+
-		math.Cos(radial1.Coordinate.Latitude)*math.Cos(radial2.Coordinate.Latitude)*math.Sin(dLon/2)*math.Sin(dLon/2)))
-	if dist12 == 0 {
-		return Coordinate{0, 0}, errors.New("dist 0")
-	}
-
-	// initial/final bearings between points
-	brngA := math.Acos((math.Sin(radial2.Coordinate.Latitude) - math.Sin(radial1.Coordinate.Latitude)*math.Cos(dist12)) /
-		(math.Sin(dist12) * math.Cos(radial1.Coordinate.Latitude)))
-	brngB := math.Acos((math.Sin(radial1.Coordinate.Latitude) - math.Sin(radial2.Coordinate.Latitude)*math.Cos(dist12)) /
-		(math.Sin(dist12) * math.Cos(radial2.Coordinate.Latitude)))
-
-	var brng12 float64
-	var brng21 float64
-	if math.Sin(radial2.Coordinate.Longitude-radial1.Coordinate.Longitude) > 0 {
-		brng12 = brngA
-		brng21 = 2*math.Pi - brngB
+	var crs12 float64
+	var crs21 float64
+	if math.Sin(radial2.Longitude-radial1.Longitude) < 0 {
+		crs12 = math.Acos((math.Sin(radial2.Latitude) - math.Sin(radial1.Latitude)*math.Cos(dst12)) / (math.Sin(dst12) * math.Cos(radial1.Latitude)))
+		crs21 = 2.*math.Pi - math.Acos((math.Sin(radial1.Latitude)-math.Sin(radial2.Latitude)*math.Cos(dst12))/(math.Sin(dst12)*math.Cos(radial2.Latitude)))
 	} else {
-		brng12 = 2*math.Pi - brngA
-		brng21 = brngB
+		crs12 = 2.*math.Pi - math.Acos((math.Sin(radial2.Latitude)-math.Sin(radial1.Latitude)*math.Cos(dst12))/(math.Sin(dst12)*math.Cos(radial1.Latitude)))
+		crs21 = math.Acos((math.Sin(radial1.Latitude) - math.Sin(radial2.Latitude)*math.Cos(dst12)) / (math.Sin(dst12) * math.Cos(radial2.Latitude)))
 	}
 
-	alpha1 := math.Mod((radial1.Bearing-brng12+math.Pi), (2*math.Pi)) - math.Pi // angle 2-1-3
-	alpha2 := math.Mod((brng21-radial2.Bearing+math.Pi), (2*math.Pi)) - math.Pi // angle 1-2-3
+	ang1 := math.Mod(crs13-crs12+math.Pi, 2.*math.Pi) - math.Pi
+	ang2 := math.Mod(crs21-crs23+math.Pi, 2.*math.Pi) - math.Pi
 
-	if math.Sin(alpha1) == 0 && math.Sin(alpha2) == 0 {
-		return Coordinate{0, 0}, errors.New("infinite intersections")
+	if math.Sin(ang1) == 0 && math.Sin(ang2) == 0 {
+		return Coordinate{0, 0}, errors.New("infinity of intersections")
+	} else if math.Sin(ang1)*math.Sin(ang2) < 0 {
+		return Coordinate{0, 0}, errors.New("intersection ambiguous")
+	} else {
+		ang1 := math.Abs(ang1)
+		ang2 := math.Abs(ang2)
+		ang3 := math.Acos(-math.Cos(ang1)*math.Cos(ang2) + math.Sin(ang1)*math.Sin(ang2)*math.Cos(dst12))
+		dst13 := math.Atan2(math.Sin(dst12)*math.Sin(ang1)*math.Sin(ang2), math.Cos(ang2)+math.Cos(ang1)*math.Cos(ang3))
+		lat3 := math.Asin(math.Sin(radial1.Latitude)*math.Cos(dst13) + math.Cos(radial1.Latitude)*math.Sin(dst13)*math.Cos(crs13))
+		dlon := math.Atan2(math.Sin(crs13)*math.Sin(dst13)*math.Cos(radial1.Latitude), math.Cos(dst13)-math.Sin(radial1.Latitude)*math.Sin(lat3))
+		lon3 := math.Mod(radial1.Longitude-dlon+math.Pi, 2*math.Pi) - math.Pi
+		return Coordinate{lat3, lon3}, nil
 	}
-	if math.Sin(alpha1)*math.Sin(alpha2) < 0 {
-		return Coordinate{0, 0}, errors.New("ambiguous intersection")
-	}
-
-	alpha3 := math.Acos(-math.Cos(alpha1)*math.Cos(alpha2) + math.Sin(alpha1)*math.Sin(alpha2)*math.Cos(dist12))
-	dist13 := math.Atan2(math.Sin(dist12)*math.Sin(alpha1)*math.Sin(alpha2), math.Cos(alpha2)+math.Cos(alpha1)*math.Cos(alpha3))
-	// latitude of the intersection point
-	coordinate.Latitude = math.Asin(math.Sin(radial1.Coordinate.Latitude)*math.Cos(dist13) +
-		math.Cos(radial1.Coordinate.Latitude)*math.Sin(dist13)*math.Cos(radial1.Bearing))
-	dLon13 := math.Atan2(math.Sin(radial1.Bearing)*math.Sin(dist13)*math.Cos(radial1.Coordinate.Latitude),
-		math.Cos(dist13)-math.Sin(radial1.Coordinate.Latitude)*math.Sin(coordinate.Latitude))
-	// longitude of intersection point
-	coordinate.Longitude = radial1.Coordinate.Longitude + dLon13
-	coordinate.Longitude = math.Mod((coordinate.Longitude+3*math.Pi), (2*math.Pi)) - math.Pi // normalise to -180..+180º
-
-	return coordinate, nil
-
 }
 
 /*
@@ -176,8 +158,7 @@ func CrossTrackError(routeStartCoord, routeEndCoord, actualCoord Coordinate) flo
 	// distance between point A and point D
 	distAD := NMToRadians(Distance(routeStartCoord, actualCoord))
 	// course of point A to point D
-	crsAD := math.Acos((math.Sin(actualCoord.Latitude) -
-		math.Sin(routeStartCoord.Latitude)*math.Cos(distAD)) / (math.Sin(distAD) * math.Cos(routeStartCoord.Latitude)))
+	crsAD := InitialBearing(routeStartCoord, actualCoord)
 	initialBearing := InitialBearing(routeStartCoord, routeEndCoord)
 	// crosstrack error
 	xtd := math.Asin(math.Sin(distAD) * math.Sin(crsAD-initialBearing))
@@ -209,10 +190,11 @@ func ClosestPoint(routeStartCoord, routeEndCoord, actualCoord Coordinate) (coord
 	distance := AlongTrackDistance(routeStartCoord, routeEndCoord, actualCoord)
 	coordinate.Latitude = math.Asin(math.Sin(routeStartCoord.Latitude)*math.Cos(distance) +
 		math.Cos(routeStartCoord.Latitude)*math.Sin(distance)*math.Cos(Bearing))
-	earthRadius := NMToRadians(3440.07)
-	coordinate.Longitude = routeStartCoord.Longitude +
-		math.Atan2(math.Sin(Bearing)*math.Sin(distance/earthRadius)*math.Cos(routeStartCoord.Latitude),
-			math.Cos(distance/earthRadius)-math.Sin(routeStartCoord.Latitude)*math.Sin(routeEndCoord.Latitude))
+	// earthRadius := NMToRadians(3440.07)
+	// coordinate.Longitude = routeStartCoord.Longitude +
+	// math.Atan2(math.Sin(Bearing)*math.Sin(distance/earthRadius)*math.Cos(routeStartCoord.Latitude),
+	// math.Cos(distance/earthRadius)-math.Sin(routeStartCoord.Latitude)*math.Sin(routeEndCoord.Latitude))
+	coordinate.Longitude = math.Mod(routeStartCoord.Longitude-math.Asin(math.Sin(Bearing)*math.Sin(distance)/math.Cos(coordinate.Latitude))+math.Pi, 2*math.Pi) - math.Pi
 	return coordinate
 }
 

@@ -1,14 +1,13 @@
 package gogreatcircle
 
 import (
-	"fmt"
 	"math"
 	"testing"
 )
 
 var latKSFO, longKSFO = DegreeUnitsToDecimalDegree(37, 37, 00), DegreeUnitsToDecimalDegree(122, 22, 00)
 var latKSJC, longKSJC = DegreeUnitsToDecimalDegree(37, 22, 00), DegreeUnitsToDecimalDegree(121, 55, 00)
-var latKLAX, longKLAX = DegreeUnitsToDecimalDegree(33, 35, 00), DegreeUnitsToDecimalDegree(118, 24, 00)
+var latKLAX, longKLAX = DegreeUnitsToDecimalDegree(33, 57, 00), DegreeUnitsToDecimalDegree(118, 24, 00)
 var latKJFK, longKJFK = DegreeUnitsToDecimalDegree(40, 38, 00), DegreeUnitsToDecimalDegree(73, 47, 00)
 var latKMOD, longKMOD = DegreeUnitsToDecimalDegree(37, 37, 00), DegreeUnitsToDecimalDegree(120, 57, 00)
 var latKMAE, longKMAE = DegreeUnitsToDecimalDegree(36, 59, 00), DegreeUnitsToDecimalDegree(120, 7, 00)
@@ -20,14 +19,14 @@ var coordKJFK = NamedCoordinate{Coordinate{DegreesToRadians(latKJFK), DegreesToR
 var coordKMOD = NamedCoordinate{Coordinate{DegreesToRadians(latKMOD), DegreesToRadians(longKMOD)}, "KMOD"}
 var coordKMAE = NamedCoordinate{Coordinate{DegreesToRadians(latKMAE), DegreesToRadians(longKMAE)}, "KMA"}
 
-func TestJFK(t *testing.T) {
+// func TestJFK(t *testing.T) {
 
-	fmt.Printf("%v\n", coordKJFK)
-	fmt.Printf("%v\n", Coordinate{0.709186, -1.287762}) // why -ve radians?
+// 	fmt.Printf("%v\n", coordKJFK)
+// 	fmt.Printf("%v\n", Coordinate{0.709186, 1.287762}) // why -ve radians?
 
-	fmt.Printf("%v\n", coordKMOD)
-	fmt.Printf("%v\n", Coordinate{0.65653, -2.11098})
-}
+// 	fmt.Printf("%v\n", coordKMOD)
+// 	fmt.Printf("%v\n", Coordinate{0.65653, 2.11098})
+// }
 
 var degreesRadians = []struct {
 	decimaldegrees float64
@@ -42,7 +41,7 @@ var nauticalMilesRadiansStruct = []struct {
 	nauticalMiles float64
 	radians       float64
 }{
-	{5000, 1.454441043328608},
+	{99.8665, 0.02905},
 }
 
 var distanceStruct = []struct {
@@ -50,10 +49,9 @@ var distanceStruct = []struct {
 	point2   Coordinate
 	distance float64
 }{
-	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 56.218067123787776},
+	{coordKLAX.Coord, coordKJFK.Coord, 2143.727060139769},
 	{coordKMOD.Coord, coordKMAE.Coord, 56.218067123787776},
 	{coordKMAE.Coord, coordKMOD.Coord, 56.218067123787776},
-	{coordKLAX.Coord, coordKJFK.Coord, 2143.727060139769},
 }
 
 var initialBearing = []struct {
@@ -62,9 +60,9 @@ var initialBearing = []struct {
 	bearing float64
 }{
 	{coordKLAX.Coord, coordKJFK.Coord, 1.15003394270832},
-	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 1.404312223088645},
-	{Coordinate{0.657782598, -2.126090282}, Coordinate{0.657302632, -2.131588069}, -1.678971437808961},
-	{Coordinate{0.657302632, -2.131588069}, Coordinate{0.657782598, -2.126090282}, 1.459261107627339},
+	{Coordinate{0.65392, 2.13134}, Coordinate{0.65653, 2.11098}, 1.404312223088645},
+	{Coordinate{0.657782598, 2.126090282}, Coordinate{0.657302632, 2.131588069}, 1.678971437808961},
+	{Coordinate{0.657302632, 2.131588069}, Coordinate{0.657782598, 2.126090282}, 1.459261107627339},
 }
 
 var intersectionRadials = []struct {
@@ -73,7 +71,7 @@ var intersectionRadials = []struct {
 	point3  Coordinate
 	err     string
 }{
-	{Radial{Coordinate{0.6573, -2.1316}, 1.2392}, Radial{Coordinate{0.6568, -2.1109}, 5.4280}, Coordinate{0.6611492323068847, -2.117252771823951}, ""},
+	{Radial{Coordinate{0.6573, 2.1316}, 1.2392}, Radial{Coordinate{0.6568, 2.1109}, 5.4280}, Coordinate{0.6611492323068847, 2.117252771823951}, ""},
 }
 
 var crosstrack = []struct {
@@ -82,7 +80,7 @@ var crosstrack = []struct {
 	point3   Coordinate
 	distance float64
 }{
-	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, -2.033309}, 0.0021674699088520496},
+	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, 2.033309}, 0.0021674699088520496},
 }
 
 var alongtrack = []struct {
@@ -91,7 +89,7 @@ var alongtrack = []struct {
 	point3   Coordinate
 	distance float64
 }{
-	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, -2.033309}, 0.028969025967186944},
+// {coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, 2.033309}, 0.028969025967186944},
 }
 
 var closestPoint = []struct {
@@ -100,8 +98,8 @@ var closestPoint = []struct {
 	point3      Coordinate
 	coordinates Coordinate
 }{
-	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.032017876228898}},
-	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, Coordinate{0.6692, -2.1193}, Coordinate{0.6687501299912878, -2.1189029245160818}},
+	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, 2.033309}, Coordinate{0.6041329655944052, 2.032017876228898}},
+	{Coordinate{0.6629, 2.1301}, Coordinate{0.6717, 2.1132}, Coordinate{0.6692, 2.1193}, Coordinate{0.6687501299912878, 2.1189029245160818}},
 	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, Coordinate{0.9595, 0.6364}, Coordinate{0.9565336530696015, 0.6373752108069288}},
 }
 
@@ -112,8 +110,8 @@ var pointInReach = []struct {
 	distance    float64
 	isItInReach bool
 }{
-	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, Coordinate{0.6692, -2.1193}, 30, true},
-	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, Coordinate{0.6774, -2.1269}, 18, false},
+	{Coordinate{0.6629, 2.1301}, Coordinate{0.6717, 2.1132}, Coordinate{0.6692, 2.1193}, 30, true},
+	{Coordinate{0.6629, 2.1301}, Coordinate{0.6717, 2.1132}, Coordinate{0.6774, 2.1269}, 18, false},
 	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, Coordinate{0.9595, 0.6364}, 1, false},
 }
 
@@ -124,7 +122,7 @@ var pointsInReach = []struct {
 	distance     float64
 	pointswithin []Coordinate
 }{
-	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, []Coordinate{Coordinate{0.6692, -2.1193}, Coordinate{0.6673, -2.1239}, Coordinate{0.6747, -2.1279}}, 30, []Coordinate{Coordinate{0.6692, -2.1193}, Coordinate{0.6673, -2.1239}}},
+	{Coordinate{0.6629, 2.1301}, Coordinate{0.6717, 2.1132}, []Coordinate{Coordinate{0.6692, 2.1193}, Coordinate{0.6673, 2.1239}, Coordinate{0.6747, 2.1279}}, 30, []Coordinate{Coordinate{0.6692, 2.1193}, Coordinate{0.6673, 2.1239}}},
 	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, []Coordinate{Coordinate{0.9595, 0.6364}, Coordinate{0.9654, 0.6665}, Coordinate{1.0075, 0.6750}}, 28, []Coordinate{Coordinate{0.9595, 0.6364}, Coordinate{0.9654, 0.6665}}},
 }
 
