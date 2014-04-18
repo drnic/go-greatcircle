@@ -160,7 +160,7 @@ func TestIntersection(t *testing.T) {
 	for _, v := range intersectionRadials {
 		resCoordinate, reserr := IntersectionRadials(&v.radial1, &v.radial2)
 		if resCoordinate != v.point3 && reserr == nil {
-			t.Fatalf("Expected: latitude: %v longitude: %v err: %v, received latitude: %v longitude: %v err: %v ", v.point3.latitude, v.point3.longitude, v.err, resCoordinate.latitude, resCoordinate.longitude, reserr)
+			t.Fatalf("Expected: latitude: %v longitude: %v err: %v, received latitude: %v longitude: %v err: %v ", v.point3.Latitude, v.point3.Longitude, v.err, resCoordinate.Latitude, resCoordinate.Longitude, reserr)
 		}
 	}
 }
