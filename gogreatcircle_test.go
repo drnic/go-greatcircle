@@ -13,12 +13,15 @@ var latKJFK, longKJFK = DegreeUnitsToDecimalDegree(40, 38, 00), DegreeUnitsToDec
 var latKMOD, longKMOD = DegreeUnitsToDecimalDegree(37, 37, 00), DegreeUnitsToDecimalDegree(120, 57, 00)
 var latKMAE, longKMAE = DegreeUnitsToDecimalDegree(36, 59, 00), DegreeUnitsToDecimalDegree(120, 7, 00)
 
-var coordKLAX = Coordinate{DegreesToRadians(latKLAX), DegreesToRadians(longKLAX)}
-var coordKMOD = Coordinate{DegreesToRadians(latKMOD), DegreesToRadians(longKMOD)}
-var coordKMAE = Coordinate{DegreesToRadians(latKMAE), DegreesToRadians(longKMAE)}
-var coordKJFK = Coordinate{DegreesToRadians(latKJFK), DegreesToRadians(longKJFK)}
+var coordKSFO = NamedCoordinate{Coordinate{DegreesToRadians(latKSFO), DegreesToRadians(longKSFO)}, "KSFO"}
+var coordKSJC = NamedCoordinate{Coordinate{DegreesToRadians(latKSJC), DegreesToRadians(longKSJC)}, "KSJC"}
+var coordKLAX = NamedCoordinate{Coordinate{DegreesToRadians(latKLAX), DegreesToRadians(longKLAX)}, "KLAX"}
+var coordKJFK = NamedCoordinate{Coordinate{DegreesToRadians(latKJFK), DegreesToRadians(longKJFK)}, "KJFK"}
+var coordKMOD = NamedCoordinate{Coordinate{DegreesToRadians(latKMOD), DegreesToRadians(longKMOD)}, "KMOD"}
+var coordKMAE = NamedCoordinate{Coordinate{DegreesToRadians(latKMAE), DegreesToRadians(longKMAE)}, "KMA"}
 
 func TestJFK(t *testing.T) {
+
 	fmt.Printf("%v\n", coordKJFK)
 	fmt.Printf("%v\n", Coordinate{0.709186, -1.287762}) // why -ve radians?
 
@@ -48,9 +51,9 @@ var distanceStruct = []struct {
 	distance float64
 }{
 	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 56.218067123787776},
-	{coordKMOD, coordKMAE, 56.218067123787776},
-	{coordKMAE, coordKMOD, 56.218067123787776},
-	{coordKLAX, coordKJFK, 2143.727060139769},
+	{coordKMOD.Coord, coordKMAE.Coord, 56.218067123787776},
+	{coordKMAE.Coord, coordKMOD.Coord, 56.218067123787776},
+	{coordKLAX.Coord, coordKJFK.Coord, 2143.727060139769},
 }
 
 var initialBearing = []struct {
@@ -58,7 +61,7 @@ var initialBearing = []struct {
 	point2  Coordinate
 	bearing float64
 }{
-	{coordKLAX, coordKJFK, 1.15003394270832},
+	{coordKLAX.Coord, coordKJFK.Coord, 1.15003394270832},
 	{Coordinate{0.65392, -2.13134}, Coordinate{0.65653, -2.11098}, 1.404312223088645},
 	{Coordinate{0.657782598, -2.126090282}, Coordinate{0.657302632, -2.131588069}, -1.678971437808961},
 	{Coordinate{0.657302632, -2.131588069}, Coordinate{0.657782598, -2.126090282}, 1.459261107627339},
@@ -79,7 +82,7 @@ var crosstrack = []struct {
 	point3   Coordinate
 	distance float64
 }{
-	{coordKLAX, coordKJFK, Coordinate{0.6021386, -2.033309}, 0.0021674699088520496},
+	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, -2.033309}, 0.0021674699088520496},
 }
 
 var alongtrack = []struct {
@@ -88,7 +91,7 @@ var alongtrack = []struct {
 	point3   Coordinate
 	distance float64
 }{
-	{coordKLAX, coordKJFK, Coordinate{0.6021386, -2.033309}, 0.028969025967186944},
+	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, -2.033309}, 0.028969025967186944},
 }
 
 var closestPoint = []struct {
@@ -97,7 +100,7 @@ var closestPoint = []struct {
 	point3      Coordinate
 	coordinates Coordinate
 }{
-	{coordKLAX, coordKJFK, Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.032017876228898}},
+	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, -2.033309}, Coordinate{0.6041329655944052, -2.032017876228898}},
 	{Coordinate{0.6629, -2.1301}, Coordinate{0.6717, -2.1132}, Coordinate{0.6692, -2.1193}, Coordinate{0.6687501299912878, -2.1189029245160818}},
 	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, Coordinate{0.9595, 0.6364}, Coordinate{0.9565336530696015, 0.6373752108069288}},
 }

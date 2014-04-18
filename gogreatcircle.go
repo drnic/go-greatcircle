@@ -23,6 +23,14 @@ type Coordinate struct {
 }
 
 /*
+NamedCoordinate includes a name or label describing the Coordinate
+*/
+type NamedCoordinate struct {
+	Coord Coordinate
+	Name  string
+}
+
+/*
 Radial describes a great circle from a specific starting coordinate
 upon an initial bearing.
 
