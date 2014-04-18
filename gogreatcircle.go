@@ -6,49 +6,87 @@ import (
 	"sort"
 )
 
+/*
+Coordinate is the position on earth in latitude/longitude.
+
+Negative longitude represents a longitude line in the western hemisphere.
+*/
 type Coordinate struct {
 	Latitude  float64
 	Longitude float64
 }
 
+/*
+Radial describes a great circle from a specific starting coordinate
+upon an initial bearing.
+
+Across the entire great circle, the bearing will be different at different
+coordinates. */
 type Radial struct {
 	Coordinate
 	Bearing float64
 }
 
-func CoordinateToDecimalDegree(degrees, minutes, seconds float64) float64 {
-	// converting coordiantes from degrees, minutes, seconds into decimal degrees
+/*
+DegreeUnitsToDecimalDegree converts from (degrees, minutes, seconds) into decimal degrees
+*/
+func DegreeUnitsToDecimalDegree(degrees, minutes, seconds float64) float64 {
 	return degrees + (minutes / 60) + (seconds / 3600)
 }
 
+/*
+DegreesToRadians converts a decimal degree into radians.
+*/
 func DegreesToRadians(degrees float64) float64 {
 	// converting decimal degrees to radians
 	return degrees * (math.Pi / 180)
 }
 
+/*
+RadiansToDegrees converts a radian into decimal degrees.
+*/
 func RadiansToDegrees(radians float64) float64 {
 	// converting radians to decimal degrees
 	return radians * (180 / math.Pi)
 }
 
+/*
+NMToRadians converts nautical miles into radians.
+*/
 func NMToRadians(nauticalMiles float64) float64 {
 	// converting nautical miles to radians
 	return (math.Pi / (180 * 60)) * nauticalMiles
 }
 
+/*
+RadiansToNM converts radians into nautical miles.
+*/
 func RadiansToNM(radians float64) float64 {
 	// converting radians to nautical miles
 	return ((180 * 60) / math.Pi) * radians
 }
 
+/*
+Distance calculates the shortest distance between two Coordinates.
+
+The shortest distance between two coordinates is the arc across the
+great circle that includes the two points.
+*/
 func Distance(point1, point2 Coordinate) float64 {
 	// distance between 2 coordiantes, returned in nautical miles
 	return (math.Acos(math.Sin(point1.Latitude)*math.Sin(point2.Latitude)+math.Cos(point1.Latitude)*math.Cos(point2.Latitude)*math.Cos(point1.Longitude-point2.Longitude)) * 180 * 60) / math.Pi
 
 }
 
+/*
+InitialBearing provides the initial true course from a point to commence
+a journey along a great circle to another point on that great
+circle.
+
+The bearing being used whilst travelling along a great circle
+will change. This function returns the bearing at point1.
+*/
 func InitialBearing(point1, point2 Coordinate) float64 {
-	// calculate the initial true course from point1 to point2
 	dLon := (point2.Longitude - point1.Longitude)
 	y := math.Sin(dLon) * math.Cos(point2.Latitude)
 	x := math.Cos(point1.Latitude)*math.Sin(point2.Latitude) - math.Sin(point1.Latitude)*math.Cos(point2.Latitude)*math.Cos(dLon)
@@ -57,8 +95,13 @@ func InitialBearing(point1, point2 Coordinate) float64 {
 	return Bearing
 }
 
+/*
+IntersectionRadials determines the Coordinate that two Radials
+would interset.
+
+Adapted from http://williams.best.vwh.net/avform.htm#Intersection
+*/
 func IntersectionRadials(radial1, radial2 Radial) (coordinate Coordinate, err error) {
-	// adapted from http://williams.best.vwh.net/avform.htm#Intersection
 	dLat := radial2.Coordinate.Latitude - radial1.Coordinate.Latitude
 	dLon := radial2.Coordinate.Longitude - radial1.Coordinate.Longitude
 
@@ -104,72 +147,96 @@ func IntersectionRadials(radial1, radial2 Radial) (coordinate Coordinate, err er
 
 }
 
-func CrossTrackError(point1, point2, point3 Coordinate) float64 {
+/*
+CrossTrackError (XTD) determines the distance off course.
+
+Positive XTD means right of course, negative means left.
+
+See http://williams.best.vwh.net/avform.htm#XTE for more information.
+*/
+func CrossTrackError(routeStartCoord, routeEndCoord, actualCoord Coordinate) float64 {
 	// distance between point A and point D
-	dist_AD := NMToRadians(Distance(point1, point3))
+	distAD := NMToRadians(Distance(routeStartCoord, actualCoord))
 	// course of point A to point D
-	crs_AD := math.Acos((math.Sin(point3.Latitude) - math.Sin(point1.Latitude)*math.Cos(dist_AD)) / (math.Sin(dist_AD) * math.Cos(point1.Latitude)))
-	initialBearing := InitialBearing(point1, point2)
+	crsAD := math.Acos((math.Sin(actualCoord.Latitude) -
+		math.Sin(routeStartCoord.Latitude)*math.Cos(distAD)) / (math.Sin(distAD) * math.Cos(routeStartCoord.Latitude)))
+	initialBearing := InitialBearing(routeStartCoord, routeEndCoord)
 	// crosstrack error
-	xtd := math.Asin(math.Sin(dist_AD) * math.Sin(crs_AD-initialBearing))
+	xtd := math.Asin(math.Sin(distAD) * math.Sin(crsAD-initialBearing))
 	return xtd
 }
 
-func AlongTrackDistance(point1, point2, point3 Coordinate) float64 {
+/*
+AlongTrackDistance is the distance from routeStartCoord along the course towards routeEndCoord to the point abeam actualCoord.
+
+See http://williams.best.vwh.net/avform.htm#XTE for more information.
+"Note that we can also use the above formulae to find the point of closest approach to the point D on the great circle through A and B"
+*/
+func AlongTrackDistance(routeStartCoord, routeEndCoord, actualCoord Coordinate) float64 {
 	// distance between point A and point D
-	dist_AD := NMToRadians(Distance(point1, point3))
+	distAD := NMToRadians(Distance(routeStartCoord, actualCoord))
 	// along track distance
-	xtd := CrossTrackError(point1, point2, point3)
-	atd := math.Asin(math.Sqrt(math.Pow((math.Sin(dist_AD)), 2)-math.Pow((math.Sin(xtd)), 2)) / math.Cos(xtd))
-	// http://williams.best.vwh.net/avform.htm#XTE - "Note that we can also use the above formulae to find the point of closest approach to the point D on the great circle through A and B"
+	xtd := CrossTrackError(routeStartCoord, routeEndCoord, actualCoord)
+	atd := math.Asin(math.Sqrt(math.Pow((math.Sin(distAD)), 2)-math.Pow((math.Sin(xtd)), 2)) / math.Cos(xtd))
 	return atd
 }
 
-func ClosestPoint(point1, point2, point3 Coordinate) (coordinate Coordinate) {
-	// coordinates on the route from point1 to point2 of a given point3
-	// calculated using the formula from http://williams.best.vwh.net/avform.htm#Example - enroute waypoint
-	Bearing := InitialBearing(point1, point2)
-	distance := AlongTrackDistance(point1, point2, point3)
-	coordinate.Latitude = math.Asin(math.Sin(point1.Latitude)*math.Cos(distance) + math.Cos(point1.Latitude)*math.Sin(distance)*math.Cos(Bearing))
+/*
+ClosestPoint determines the coordinate for the closest point along a course/radial from the actualCoord.
+
+Calculated using the formula from http://williams.best.vwh.net/avform.htm#Example - enroute waypoint.
+*/
+func ClosestPoint(routeStartCoord, routeEndCoord, actualCoord Coordinate) (coordinate Coordinate) {
+	Bearing := InitialBearing(routeStartCoord, routeEndCoord)
+	distance := AlongTrackDistance(routeStartCoord, routeEndCoord, actualCoord)
+	coordinate.Latitude = math.Asin(math.Sin(routeStartCoord.Latitude)*math.Cos(distance) +
+		math.Cos(routeStartCoord.Latitude)*math.Sin(distance)*math.Cos(Bearing))
 	earthRadius := NMToRadians(3440.07)
-	coordinate.Longitude = point1.Longitude + math.Atan2(math.Sin(Bearing)*math.Sin(distance/earthRadius)*math.Cos(point1.Latitude), math.Cos(distance/earthRadius)-math.Sin(point1.Latitude)*math.Sin(point2.Latitude))
+	coordinate.Longitude = routeStartCoord.Longitude +
+		math.Atan2(math.Sin(Bearing)*math.Sin(distance/earthRadius)*math.Cos(routeStartCoord.Latitude),
+			math.Cos(distance/earthRadius)-math.Sin(routeStartCoord.Latitude)*math.Sin(routeEndCoord.Latitude))
 	return coordinate
 }
 
-// helper function for Pointinreach and Pointsinreach
-
+/*
+pointOfReachDistance is a helper function for PointInReach and PointsInReach
+first we use the ClosestPoint function to get the first point (the closest to the provided point3)
+and then compute the distance to the given point3 and compare it against the given distance
+*/
 func pointOfReachDistance(point1, point2, point3 Coordinate) float64 {
-	// first we use the ClosestPoint function to get the first point (the closest to the provided point3)
-	// and then compute the distance to the given point3 and compare it against the given distance
 	closestpoint := ClosestPoint(point1, point2, point3)
 	distanceBetweenPoints := Distance(closestpoint, point3)
 
 	return distanceBetweenPoints
 }
 
+/*
+PointInReach determines if actualCoord is within testDistance of the route from
+
+*/
 func PointInReach(point1, point2, point3 Coordinate, distance float64) (response bool) {
 	// using the helper function above we find the point3 in reach and get the distance
 	// of to point3. Comparing the expected distance with the provided distance
 	//the function returns true if point3 is in range, else false
 	distanceBetweenPoints := pointOfReachDistance(point1, point2, point3)
-	if distanceBetweenPoints <= distance {
-		return true
-	} else {
-		return false
-	}
+	return distanceBetweenPoints <= distance
 }
 
-func PointsInReach(point1, point2 Coordinate, distance float64, points []Coordinate) []Coordinate {
+/*
+PointsInReach filters a list of Coordinates to return only those Coordinates that are within testDistance
+of the (routeStartCoord, routeEndCoord) route.
+*/
+func PointsInReach(routeStartCoord, routeEndCoord Coordinate, distance float64, coords []Coordinate) []Coordinate {
 	// providing an array of points, the helper function is used to get the distance
 	// to those points and then compared with the distance provided.
 	// If the points are within distance, they are returned sorted
 	pointsInReach := make(map[float64]Coordinate)
 	var sortedPointsInReach []Coordinate
 
-	for _, point := range points {
-		distanceBetweenPoints := pointOfReachDistance(point1, point2, point)
+	for _, coord := range coords {
+		distanceBetweenPoints := pointOfReachDistance(routeStartCoord, routeEndCoord, coord)
 		if distanceBetweenPoints <= distance {
-			pointsInReach[distanceBetweenPoints] = point
+			pointsInReach[distanceBetweenPoints] = coord
 		}
 
 	}
