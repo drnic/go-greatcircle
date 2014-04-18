@@ -52,9 +52,9 @@ var nauticalMilesRadiansStruct = []struct {
 }
 
 var distanceStruct = []struct {
-	point1Name string
-	point2Name string
-	distance   float64
+	point1Name       string
+	point2Name       string
+	expectedDistance float64
 }{
 	{"KMOD", "KMAE", 55.5},
 	{"KMAE", "KMOD", 55.5},
@@ -63,9 +63,9 @@ var distanceStruct = []struct {
 }
 
 var initialBearing = []struct {
-	point1Name string
-	point2Name string
-	bearing    float64
+	point1Name      string
+	point2Name      string
+	expectedBearing float64
 }{
 	{"KMOD", "KMAE", DegreesToRadians(133)},
 	{"KMAE", "KMOD", DegreesToRadians(314)},
@@ -173,8 +173,8 @@ func TestDistance(t *testing.T) {
 	for _, v := range distanceStruct {
 		point1, point2 := coordsByName[v.point1Name], coordsByName[v.point2Name]
 		result := Distance(point1.Coord, point2.Coord)
-		if math.Abs(result-v.distance) > 0.1 {
-			t.Fatalf("From %s to %s expected: %v, received %v", v.point1Name, v.point2Name, v.distance, result)
+		if math.Abs(result-v.expectedDistance) > 0.1 {
+			t.Fatalf("Distance between %s %s expected: %v, received %v", v.point1Name, v.point2Name, v.expectedDistance, result)
 		}
 	}
 }
@@ -183,8 +183,8 @@ func TestInitialBearing(t *testing.T) {
 	for _, v := range initialBearing {
 		point1, point2 := coordsByName[v.point1Name], coordsByName[v.point2Name]
 		result := InitialBearing(point1.Coord, point2.Coord)
-		if math.Abs(result-v.bearing) > 0.5 {
-			t.Fatalf("From %s to %s expected: %v, received %v", v.point1Name, v.point2Name, v.bearing, result)
+		if math.Abs(result-v.expectedBearing) > 0.5 {
+			t.Fatalf("Initial bearing of %s %s expected: %v, received %v", v.point1Name, v.point2Name, v.expectedBearing, result)
 		}
 	}
 }
