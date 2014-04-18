@@ -114,7 +114,7 @@ Adapted from http://williams.best.vwh.net/avform.htm#Intersection
 func IntersectionRadials(radial1, radial2 Radial) (coordinate Coordinate, err error) {
 	dst12 := 2 * math.Asin(math.Sqrt(math.Pow((math.Sin((radial1.Latitude-radial2.Latitude)/2)), 2)+
 		math.Cos(radial1.Latitude)*math.Cos(radial2.Latitude)*math.Pow(math.Sin((radial1.Longitude-radial2.Longitude)/2), 2)))
-	// // initial/final bearings between points
+	// initial/final bearings between points
 	crs13 := InitialBearing(radial1.Coordinate, radial2.Coordinate)
 	crs23 := InitialBearing(radial2.Coordinate, radial1.Coordinate)
 
@@ -190,10 +190,6 @@ func ClosestPoint(routeStartCoord, routeEndCoord, actualCoord Coordinate) (coord
 	distance := AlongTrackDistance(routeStartCoord, routeEndCoord, actualCoord)
 	coordinate.Latitude = math.Asin(math.Sin(routeStartCoord.Latitude)*math.Cos(distance) +
 		math.Cos(routeStartCoord.Latitude)*math.Sin(distance)*math.Cos(Bearing))
-	// earthRadius := NMToRadians(3440.07)
-	// coordinate.Longitude = routeStartCoord.Longitude +
-	// math.Atan2(math.Sin(Bearing)*math.Sin(distance/earthRadius)*math.Cos(routeStartCoord.Latitude),
-	// math.Cos(distance/earthRadius)-math.Sin(routeStartCoord.Latitude)*math.Sin(routeEndCoord.Latitude))
 	coordinate.Longitude = math.Mod(routeStartCoord.Longitude-math.Asin(math.Sin(Bearing)*math.Sin(distance)/math.Cos(coordinate.Latitude))+math.Pi, 2*math.Pi) - math.Pi
 	return coordinate
 }
@@ -215,9 +211,11 @@ PointInReach determines if actualCoord is within testDistance of the route from
 
 */
 func PointInReach(point1, point2, point3 Coordinate, distance float64) (response bool) {
-	// using the helper function above we find the point3 in reach and get the distance
-	// of to point3. Comparing the expected distance with the provided distance
-	//the function returns true if point3 is in range, else false
+	/*
+		using the helper function above we find the point3 in reach and get the distance
+		of to point3. Comparing the expected distance with the provided distance
+		the function returns true if point3 is in range, else false
+	*/
 	distanceBetweenPoints := pointOfReachDistance(point1, point2, point3)
 	return distanceBetweenPoints <= distance
 }
@@ -227,9 +225,11 @@ PointsInReach filters a list of Coordinates to return only those Coordinates tha
 of the (routeStartCoord, routeEndCoord) route.
 */
 func PointsInReach(routeStartCoord, routeEndCoord Coordinate, distance float64, coords []Coordinate) []Coordinate {
-	// providing an array of points, the helper function is used to get the distance
-	// to those points and then compared with the distance provided.
-	// If the points are within distance, they are returned sorted
+	/*
+		providing an array of points, the helper function is used to get the distance
+		 to those points and then compared with the distance provided.
+		 If the points are within distance, they are returned sorted
+	*/
 	pointsInReach := make(map[float64]Coordinate)
 	var sortedPointsInReach []Coordinate
 
