@@ -77,8 +77,8 @@ The shortest distance between two coordinates is the arc across the
 great circle that includes the two points.
 */
 func Distance(point1, point2 Coordinate) float64 {
-	return (math.Acos(math.Sin(point1.Latitude)*math.Sin(point2.Latitude)+math.Cos(point1.Latitude)*math.Cos(point2.Latitude)*math.Cos(point1.Longitude-point2.Longitude)) * 180 * 60) / math.Pi
-
+	return (math.Acos(math.Sin(point1.Latitude)*math.Sin(point2.Latitude)+
+		math.Cos(point1.Latitude)*math.Cos(point2.Latitude)*math.Cos(point1.Longitude-point2.Longitude)) * 180 * 60) / math.Pi
 }
 
 /*
@@ -110,14 +110,17 @@ func IntersectionRadials(radial1, radial2 Radial) (coordinate Coordinate, err er
 	dLat := radial2.Coordinate.Latitude - radial1.Coordinate.Latitude
 	dLon := radial2.Coordinate.Longitude - radial1.Coordinate.Longitude
 
-	dist12 := 2 * math.Asin(math.Sqrt(math.Sin(dLat/2)*math.Sin(dLat/2)+math.Cos(radial1.Coordinate.Latitude)*math.Cos(radial2.Coordinate.Latitude)*math.Sin(dLon/2)*math.Sin(dLon/2)))
+	dist12 := 2 * math.Asin(math.Sqrt(math.Sin(dLat/2)*math.Sin(dLat/2)+
+		math.Cos(radial1.Coordinate.Latitude)*math.Cos(radial2.Coordinate.Latitude)*math.Sin(dLon/2)*math.Sin(dLon/2)))
 	if dist12 == 0 {
 		return Coordinate{0, 0}, errors.New("dist 0")
 	}
 
 	// initial/final bearings between points
-	brngA := math.Acos((math.Sin(radial2.Coordinate.Latitude) - math.Sin(radial1.Coordinate.Latitude)*math.Cos(dist12)) / (math.Sin(dist12) * math.Cos(radial1.Coordinate.Latitude)))
-	brngB := math.Acos((math.Sin(radial1.Coordinate.Latitude) - math.Sin(radial2.Coordinate.Latitude)*math.Cos(dist12)) / (math.Sin(dist12) * math.Cos(radial2.Coordinate.Latitude)))
+	brngA := math.Acos((math.Sin(radial2.Coordinate.Latitude) - math.Sin(radial1.Coordinate.Latitude)*math.Cos(dist12)) /
+		(math.Sin(dist12) * math.Cos(radial1.Coordinate.Latitude)))
+	brngB := math.Acos((math.Sin(radial1.Coordinate.Latitude) - math.Sin(radial2.Coordinate.Latitude)*math.Cos(dist12)) /
+		(math.Sin(dist12) * math.Cos(radial2.Coordinate.Latitude)))
 
 	var brng12 float64
 	var brng21 float64
@@ -142,8 +145,10 @@ func IntersectionRadials(radial1, radial2 Radial) (coordinate Coordinate, err er
 	alpha3 := math.Acos(-math.Cos(alpha1)*math.Cos(alpha2) + math.Sin(alpha1)*math.Sin(alpha2)*math.Cos(dist12))
 	dist13 := math.Atan2(math.Sin(dist12)*math.Sin(alpha1)*math.Sin(alpha2), math.Cos(alpha2)+math.Cos(alpha1)*math.Cos(alpha3))
 	// latitude of the intersection point
-	coordinate.Latitude = math.Asin(math.Sin(radial1.Coordinate.Latitude)*math.Cos(dist13) + math.Cos(radial1.Coordinate.Latitude)*math.Sin(dist13)*math.Cos(radial1.Bearing))
-	dLon13 := math.Atan2(math.Sin(radial1.Bearing)*math.Sin(dist13)*math.Cos(radial1.Coordinate.Latitude), math.Cos(dist13)-math.Sin(radial1.Coordinate.Latitude)*math.Sin(coordinate.Latitude))
+	coordinate.Latitude = math.Asin(math.Sin(radial1.Coordinate.Latitude)*math.Cos(dist13) +
+		math.Cos(radial1.Coordinate.Latitude)*math.Sin(dist13)*math.Cos(radial1.Bearing))
+	dLon13 := math.Atan2(math.Sin(radial1.Bearing)*math.Sin(dist13)*math.Cos(radial1.Coordinate.Latitude),
+		math.Cos(dist13)-math.Sin(radial1.Coordinate.Latitude)*math.Sin(coordinate.Latitude))
 	// longitude of intersection point
 	coordinate.Longitude = radial1.Coordinate.Longitude + dLon13
 	coordinate.Longitude = math.Mod((coordinate.Longitude+3*math.Pi), (2*math.Pi)) - math.Pi // normalise to -180..+180º
