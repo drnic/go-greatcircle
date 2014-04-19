@@ -8,6 +8,7 @@ North latitudes and West longitudes are treated as positive, and South latitudes
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"sort"
 )
@@ -198,12 +199,13 @@ ClosestPoint determines the coordinate for the closest point along a course/radi
 
 Calculated using the formula from http://williams.best.vwh.net/avform.htm#Example - enroute waypoint.
 */
-func ClosestPoint(routeStartCoord, routeEndCoord, actualCoord Coordinate) (coordinate Coordinate) {
-	Bearing := InitialBearing(routeStartCoord, routeEndCoord)
+func ClosestPoint(routeStartCoord, routeEndCoord, actualCoord Coordinate) Coordinate {
+	var coordinate Coordinate
+	bearing := InitialBearing(routeStartCoord, routeEndCoord)
 	distance := AlongTrackDistance(routeStartCoord, routeEndCoord, actualCoord)
 	coordinate.Latitude = math.Asin(math.Sin(routeStartCoord.Latitude)*math.Cos(distance) +
-		math.Cos(routeStartCoord.Latitude)*math.Sin(distance)*math.Cos(Bearing))
-	coordinate.Longitude = math.Mod(routeStartCoord.Longitude-math.Asin(math.Sin(Bearing)*math.Sin(distance)/math.Cos(coordinate.Latitude))+math.Pi, 2*math.Pi) - math.Pi
+		math.Cos(routeStartCoord.Latitude)*math.Sin(distance)*math.Cos(bearing))
+	coordinate.Longitude = math.Mod(routeStartCoord.Longitude-math.Asin(math.Sin(bearing)*math.Sin(distance)/math.Cos(coordinate.Latitude))+math.Pi, 2*math.Pi) - math.Pi
 	return coordinate
 }
 
@@ -265,4 +267,45 @@ func PointsInReach(routeStartCoord, routeEndCoord Coordinate, distance float64, 
 
 	return sortedPointsInReach
 
+}
+
+/* MultiPointRoutePOIS takes a 2 lists of coordinates and a distance. The first list of coordinates
+will be used to form the multi point route and the second list will be the point of interest list which will be within
+the provided distance.
+It returns a struct for each match with the point of interest coordinates, the neareast point on the route to the poi and the distance between the nearest poit and the poi.
+*/
+
+type MultiPoint struct {
+	Poi      Coordinate
+	Neareast Coordinate
+	Distance float64
+}
+
+func MultiPointRoutePOIS(routePoints, pois []Coordinate, distance float64) []MultiPoint {
+	var multiPoint []MultiPoint
+	for i, point := range routePoints {
+		if len(routePoints) > i+1 {
+			poistemp := PointsInReach(point, routePoints[i+1], distance, pois)
+			fmt.Println(point, routePoints[i+1], distance, pois)
+			for _, poi := range poistemp {
+				mps := MultiPoint{}
+				mps.Poi = poi
+				mps.Neareast = ClosestPoint(point, routePoints[i+1], poi)
+				mps.Distance = Distance(mps.Neareast, poi)
+
+				// append to the struct
+				multiPoint = append(multiPoint, mps)
+			}
+		}
+	}
+	// poisInReach can contain duplicate pois, so let's remove the duplicates
+	finalPoisInReach := []MultiPoint{}
+	m := map[Coordinate]bool{}
+	for _, v := range multiPoint {
+		if _, seen := m[v.Poi]; !seen {
+			finalPoisInReach = append(finalPoisInReach, v)
+			m[v.Poi] = true
+		}
+	}
+	return finalPoisInReach
 }

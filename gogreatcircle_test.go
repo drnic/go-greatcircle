@@ -134,6 +134,28 @@ var pointsInReach = []struct {
 	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, []Coordinate{Coordinate{0.9595, 0.6364}, Coordinate{0.9654, 0.6665}, Coordinate{1.0075, 0.6750}}, 28, []Coordinate{Coordinate{0.9595, 0.6364}, Coordinate{0.9654, 0.6665}}},
 }
 
+var multiPoint = []struct {
+	routePoints      []Coordinate
+	pois             []Coordinate
+	distance         float64
+	finalPoisInReach []MultiPoint
+}{
+	{[]Coordinate{
+		Coordinate{latKSFO, longKSFO},
+		Coordinate{latKSJC, longKSJC},
+		Coordinate{latKLAX, longKLAX},
+		Coordinate{latKMAE, longKMAE}},
+		[]Coordinate{
+			Coordinate{DegreeUnitsToDecimalDegree(36, 46.74, 0), DegreeUnitsToDecimalDegree(120, 8.23, 0)},
+			Coordinate{DegreeUnitsToDecimalDegree(37, 20.66, 0), DegreeUnitsToDecimalDegree(121, 36.23, 0)},
+			Coordinate{DegreeUnitsToDecimalDegree(34, 59.94, 0), DegreeUnitsToDecimalDegree(120, 19.43, 0)}}, 100,
+		[]MultiPoint{
+			MultiPoint{Coordinate{DegreeUnitsToDecimalDegree(36, 46.74, 0), DegreeUnitsToDecimalDegree(120, 8.23, 0)}, Coordinate{0, 0}, 7},
+			MultiPoint{Coordinate{DegreeUnitsToDecimalDegree(37, 20.66, 0), DegreeUnitsToDecimalDegree(121, 36.23, 0)}, Coordinate{0, 0}, 5},
+			MultiPoint{Coordinate{DegreeUnitsToDecimalDegree(34, 59.94, 0), DegreeUnitsToDecimalDegree(120, 19.43, 0)}, Coordinate{0, 0}, 8}},
+	},
+}
+
 func TestDegreesToRadians(t *testing.T) {
 	for _, v := range degreesRadians {
 		result := DegreesToRadians(v.decimaldegrees)
@@ -276,4 +298,17 @@ func TestPointsInReach(t *testing.T) {
 		// }
 
 	}
+}
+
+func TestMultiPointRoutePOIS(t *testing.T) {
+	for _, v := range multiPoint {
+		results := MultiPointRoutePOIS(v.routePoints, v.pois, v.distance)
+		fmt.Println("here")
+		fmt.Println(results)
+		for _, result := range results {
+			fmt.Println(result)
+		}
+
+	}
+
 }
