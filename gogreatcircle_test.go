@@ -180,6 +180,15 @@ func TestRadiansToNM(t *testing.T) {
 	}
 }
 
+func TestNamedCoordinateEqual(t *testing.T) {
+	if !(coordKSFO == coordKSFO) {
+		t.Fatalf("Expected %v to equal itself", coordKSFO)
+	}
+	if coordKSFO == coordKLAX {
+		t.Fatalf("Expected %v to not equal %v", coordKSFO, coordKLAX)
+	}
+}
+
 func TestDistance(t *testing.T) {
 	for _, v := range distanceStruct {
 		point1, point2 := coordsByName[v.point1Name], coordsByName[v.point2Name]

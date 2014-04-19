@@ -41,6 +41,15 @@ type NamedCoordinate struct {
 }
 
 /*
+Equal compares this NamedCoordinate to another and determines if their
+Latitude & Longitudes are equivalent (to 3 decimal places); and
+their Name is equivalent
+*/
+func (thisCoord NamedCoordinate) Equal(another NamedCoordinate) bool {
+	return thisCoord.Equal(another) && thisCoord.Name == another.Name
+}
+
+/*
 Radial describes a great circle from a specific starting coordinate
 upon an initial bearing.
 
