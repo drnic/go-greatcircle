@@ -1,4 +1,4 @@
-package gogreatcircle
+package greatcircle
 
 import (
 	"fmt"
@@ -143,6 +143,24 @@ var multiPoint = []struct {
 			MultiPoint{Coordinate{DegreeUnitsToDecimalDegree(37, 20.66, 0), DegreeUnitsToDecimalDegree(121, 36.23, 0)}, Coordinate{0, 0}, 5},
 			MultiPoint{Coordinate{DegreeUnitsToDecimalDegree(34, 59.94, 0), DegreeUnitsToDecimalDegree(120, 19.43, 0)}, Coordinate{0, 0}, 8}},
 	},
+}
+
+func TestDegreeStringToDegreeUnits(t *testing.T) {
+	degree, err := DegreeStrToDecimalDegree("37:37:00")
+	if err != nil {
+		t.Fatalf("Error parsing 37:37:00; error %v", err)
+	}
+	if degree != DegreeUnitsToDecimalDegree(37, 37, 0) {
+		t.Fatalf("Failed to parse 37:37:00; result %v", DegreeUnitsToDecimalDegree(37, 37, 0))
+	}
+
+	degree, err = DegreeStrToDecimalDegree("120:57:16")
+	if err != nil {
+		t.Fatalf("Error parsing 120:57:16; error %v", err)
+	}
+	if degree != DegreeUnitsToDecimalDegree(120, 57, 16) {
+		t.Fatalf("Failed to parse 120:57:16; result %v", DegreeUnitsToDecimalDegree(120, 57, 16))
+	}
 }
 
 func TestDegreesToRadians(t *testing.T) {

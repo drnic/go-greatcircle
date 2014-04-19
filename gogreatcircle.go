@@ -1,4 +1,4 @@
-package gogreatcircle
+package greatcircle
 
 /*
 Library for various Earth coordinate & Great Circle calcuations.
@@ -11,7 +11,16 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
+	"strings"
 )
+
+/*
+DegreeUnits is a value of latitude or longitude in degrees.
+*/
+type DegreeUnits struct {
+	degree, minute, second float64
+}
 
 /*
 Coordinate is the position on earth in latitude/longitude.
@@ -23,13 +32,40 @@ type Coordinate struct {
 	Longitude float64
 }
 
+func NewCoordinate(latitude string, longitude string) (Coordinate, error) {
+	latitudeDegrees, err := DegreeStrToDecimalDegree(latitude)
+	if err != nil {
+		return Coordinate{}, err
+	}
+	longitudeDegrees, err := DegreeStrToDecimalDegree(longitude)
+	if err != nil {
+		return Coordinate{}, err
+	}
+	return Coordinate{DegreesToRadians(latitudeDegrees), DegreesToRadians(longitudeDegrees)}, nil
+}
+
 /*
 Equal compares this Coordinate to another and determines if their
 Latitude & Longitudes are equivalent (to 3 decimal places)
 */
-func (thisCoord Coordinate) Equal(another Coordinate) bool {
-	return math.Abs(thisCoord.Latitude-another.Latitude) <= 0.001 &&
-		math.Abs(thisCoord.Longitude-another.Longitude) <= 0.001
+func (coord Coordinate) Equal(another Coordinate) bool {
+	return math.Abs(coord.Latitude-another.Latitude) <= 0.001 &&
+		math.Abs(coord.Longitude-another.Longitude) <= 0.001
+}
+
+/*
+ToSkyVector returns a string that is a valid coordinate for
+skyvector.com.
+
+Response format: latitude:longitude
+
+SkyVector uses -ve for west & +ve for east.
+*/
+func (coord Coordinate) ToSkyVector() (out string) {
+	out = strconv.FormatFloat(RadiansToDegrees(coord.Latitude), 'f', 2, 64)
+	out = out + ":"
+	out = out + strconv.FormatFloat(-1*RadiansToDegrees(coord.Longitude), 'f', 2, 64)
+	return
 }
 
 /*
@@ -38,6 +74,14 @@ NamedCoordinate includes a name or label describing the Coordinate
 type NamedCoordinate struct {
 	Coord Coordinate
 	Name  string
+}
+
+func NewNamedCoordinate(name string, latitude string, longitude string) (NamedCoordinate, error) {
+	coord, err := NewCoordinate(latitude, longitude)
+	if err != nil {
+		return NamedCoordinate{}, err
+	}
+	return NamedCoordinate{coord, name}, nil
 }
 
 /*
@@ -58,6 +102,24 @@ coordinates. */
 type Radial struct {
 	Coordinate
 	Bearing float64
+}
+
+func DegreeStrToDecimalDegree(degrees string) (float64, error) {
+	units := strings.Split(degrees, ":")
+	if len(units) > 3 {
+		return 0, errors.New(degrees + " should have 3 or fewer portions")
+	}
+	unitMultiplier := 1.0
+	decimalDegree := 0.0
+	for _, unit := range units {
+		unitValue, err := strconv.ParseFloat(unit, 64)
+		if err != nil {
+			return 0, err
+		}
+		decimalDegree = decimalDegree + unitValue/unitMultiplier
+		unitMultiplier = unitMultiplier * 60
+	}
+	return decimalDegree, nil
 }
 
 /*
@@ -284,6 +346,30 @@ func PointsInReach(routeStartCoord, routeEndCoord Coordinate, distance float64, 
 
 	return sortedPointsInReach
 
+}
+
+type MultiPointRoute []NamedCoordinate
+
+func NewMultiPointRoute(coords []NamedCoordinate) (route MultiPointRoute) {
+	route = MultiPointRoute(coords)
+	return
+}
+
+/*
+ToSkyVector returns a string that is a valid route for
+skyvector.com.
+*/
+func (route MultiPointRoute) ToSkyVector() (out string) {
+	out = ""
+	for _, coord := range route {
+		if coord.Name != "" {
+			out = out + coord.Name
+		} else {
+			out = out + coord.Coord.ToSkyVector()
+		}
+		out = out + " "
+	}
+	return
 }
 
 /* MultiPointRoutePOIS takes a 2 lists of coordinates and a distance. The first list of coordinates
