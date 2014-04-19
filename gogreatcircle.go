@@ -59,13 +59,20 @@ skyvector.com.
 
 Response format: latitude:longitude
 
-SkyVector uses -ve for west & +ve for east.
+SkyVector uses -ve for west & +ve for east. This library is the opposite.
 */
 func (coord Coordinate) ToSkyVector() (out string) {
 	out = strconv.FormatFloat(RadiansToDegrees(coord.Latitude), 'f', 2, 64)
 	out = out + ":"
 	out = out + strconv.FormatFloat(-1*RadiansToDegrees(coord.Longitude), 'f', 2, 64)
 	return
+}
+
+/*
+ToNamedCoordinate casts the simple Coordinate into a NamedCoordinate
+*/
+func (coord Coordinate) ToNamedCoordinate() NamedCoordinate {
+	return NamedCoordinate{coord, ""}
 }
 
 /*
