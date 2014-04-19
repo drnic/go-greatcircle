@@ -36,4 +36,21 @@ func main() {
 	})
 	fmt.Println("Visit http://skyvector.com/ and enter the following flight plan:")
 	fmt.Println(route.ToSkyVector())
+
+	coords := []gc.Coordinate{}
+	for _, coord := range coordsByName {
+		coords = append(coords, coord.Coord)
+	}
+	coordsInReach := gc.PointsInReach(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, 25, coords)
+
+	route = gc.NewMultiPointRoute([]gc.NamedCoordinate{coordsByName["KSFO"]})
+	for _, coordInReach := range coordsInReach {
+		if !coordInReach.Equal(coordsByName["KLAX"].Coord) {
+			route = append(route, coordInReach.ToNamedCoordinate())
+		}
+	}
+	route = append(route, coordsByName["KLAX"])
+
+	fmt.Println("Visit http://skyvector.com/ and enter the following flight plan:")
+	fmt.Println(route.ToSkyVector())
 }
