@@ -24,6 +24,15 @@ type Coordinate struct {
 }
 
 /*
+Equal compares this Coordinate to another and determines if their
+Latitude & Longitudes are equivalent (to 3 decimal places)
+*/
+func (thisCoord Coordinate) Equal(another Coordinate) bool {
+	return math.Abs(thisCoord.Latitude-another.Latitude) <= 0.001 &&
+		math.Abs(thisCoord.Longitude-another.Longitude) <= 0.001
+}
+
+/*
 NamedCoordinate includes a name or label describing the Coordinate
 */
 type NamedCoordinate struct {
@@ -223,7 +232,6 @@ func pointOfReachDistance(point1, point2, point3 Coordinate) float64 {
 
 /*
 PointInReach determines if actualCoord is within testDistance of the route from
-
 */
 func PointInReach(point1, point2, point3 Coordinate, distance float64) (response bool) {
 	/*

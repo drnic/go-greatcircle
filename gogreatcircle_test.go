@@ -100,17 +100,6 @@ var alongtrack = []struct {
 // {coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, 2.033309}, 0.028969025967186944},
 }
 
-var closestPoint = []struct {
-	point1      Coordinate
-	point2      Coordinate
-	point3      Coordinate
-	coordinates Coordinate
-}{
-	{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, 2.033309}, Coordinate{0.6041329655944052, 2.032017876228898}},
-	{Coordinate{0.6629, 2.1301}, Coordinate{0.6717, 2.1132}, Coordinate{0.6692, 2.1193}, Coordinate{0.6687501299912878, 2.1189029245160818}},
-	{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, Coordinate{0.9595, 0.6364}, Coordinate{0.9565336530696015, 0.6373752108069288}},
-}
-
 var pointInReach = []struct {
 	point1      Coordinate
 	point2      Coordinate
@@ -177,7 +166,7 @@ func TestRadiansToDegrees(t *testing.T) {
 func TestNMToRadians(t *testing.T) {
 	for _, v := range nauticalMilesRadiansStruct {
 		result := NMToRadians(v.nauticalMiles)
-		if result != v.radians {
+		if math.Abs(result-v.radians) > 0.0001 {
 			t.Fatalf("Expected: %v, received %v", v.radians, result)
 		}
 	}
@@ -185,7 +174,7 @@ func TestNMToRadians(t *testing.T) {
 func TestRadiansToNM(t *testing.T) {
 	for _, v := range nauticalMilesRadiansStruct {
 		result := RadiansToNM(v.radians)
-		if result != v.nauticalMiles {
+		if math.Abs(result-v.nauticalMiles) > 0.0001 {
 			t.Fatalf("Expected: %v, received %v", v.nauticalMiles, result)
 		}
 	}
@@ -223,7 +212,7 @@ func TestIntersection(t *testing.T) {
 func TestCrossTrackError(t *testing.T) {
 	for _, v := range crosstrack {
 		result := CrossTrackError(v.point1, v.point2, v.point3)
-		if result != v.distance {
+		if math.Abs(result-v.distance) > 0.0001 {
 			t.Fatalf("Expected: %v, received %v", v.distance, result)
 		}
 	}
@@ -239,9 +228,20 @@ func TestAlongTrackDistance(t *testing.T) {
 }
 
 func TestClosest(t *testing.T) {
+	var closestPoint = []struct {
+		point1      Coordinate
+		point2      Coordinate
+		point3      Coordinate
+		coordinates Coordinate
+	}{
+		{coordKLAX.Coord, coordKJFK.Coord, Coordinate{0.6021386, 2.033309}, Coordinate{0.6041329655944052, 2.034339700924182}},
+		{Coordinate{0.6629, 2.1301}, Coordinate{0.6717, 2.1132}, Coordinate{0.6692, 2.1193}, Coordinate{0.6687501299912878, 2.1189029245160818}},
+		{Coordinate{0.9427, 0.4892}, Coordinate{0.9593, 0.8124}, Coordinate{0.9595, 0.6364}, Coordinate{0.9565336530696015, 0.6373752108069288}},
+	}
+
 	for _, v := range closestPoint {
 		result := ClosestPoint(v.point1, v.point2, v.point3)
-		if result != v.coordinates {
+		if !result.Equal(v.coordinates) {
 			t.Fatalf("Expected: %v, received %v", v.coordinates, result)
 		}
 	}
