@@ -23,6 +23,7 @@ func main() {
 		"KJFK": coord("KJFK", "40:38:00", "73:47:00"),
 		"KMOD": coord("KMOD", "37:37:33", "120:57:16"),
 		"KMAE": coord("KMAE", "36:59:00", "120:7:00"),
+		"KKIC": coord("KKIC", "36:13:50", "121:7:00"),
 	}
 
 	ksjcOnRoute := gc.ClosestPoint(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, coordsByName["KSJC"].Coord)
@@ -34,6 +35,7 @@ func main() {
 		e16OnRoute.ToNamedCoordinate(),
 		coordsByName["KLAX"],
 	})
+	fmt.Println("Some selected closest points along a route:")
 	fmt.Println("Visit http://skyvector.com/ and enter the following flight plan:")
 	fmt.Println(route.ToSkyVector())
 
@@ -51,6 +53,21 @@ func main() {
 	}
 	route = append(route, coordsByName["KLAX"])
 
+	fmt.Println("\nA route of points that are within 25nM of KSFO-KLAX:")
 	fmt.Println("Visit http://skyvector.com/ and enter the following flight plan:")
 	fmt.Println(route.ToSkyVector())
+
+	route = gc.NewMultiPointRoute([]gc.NamedCoordinate{coordsByName["KSFO"]})
+	for _, coordInReach := range coordsInReach {
+		if !coordInReach.Equal(coordsByName["KLAX"].Coord) {
+			closestPoint := gc.ClosestPoint(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, coordInReach)
+			route = append(route, closestPoint.ToNamedCoordinate())
+		}
+	}
+	route = append(route, coordsByName["KLAX"])
+
+	fmt.Println("\nThe route KSFO-KLAX with waypoints near other airports along the route:")
+	fmt.Println("Visit http://skyvector.com/ and enter the following flight plan:")
+	fmt.Println(route.ToSkyVector())
+
 }
