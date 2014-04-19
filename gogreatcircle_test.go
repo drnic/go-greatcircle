@@ -69,8 +69,8 @@ var initialBearing = []struct {
 }{
 	{"KMOD", "KMAE", DegreesToRadians(133)},
 	{"KMAE", "KMOD", DegreesToRadians(314)},
-	{"KLAX", "KJFK", DegreesToRadians(274)},
-	{"KJFK", "KLAX", DegreesToRadians(66)},
+	{"KLAX", "KJFK", DegreesToRadians(66)},
+	{"KJFK", "KLAX", DegreesToRadians(274)},
 }
 
 var intersectionRadials = []struct {
@@ -195,7 +195,8 @@ func TestInitialBearing(t *testing.T) {
 		point1, point2 := coordsByName[v.point1Name], coordsByName[v.point2Name]
 		result := InitialBearing(point1.Coord, point2.Coord)
 		if math.Abs(result-v.expectedBearing) > 0.5 {
-			t.Fatalf("Initial bearing of %s %s expected: %v, received %v", v.point1Name, v.point2Name, v.expectedBearing, result)
+			t.Fatalf("Initial bearing of %s %s expected: %v, received %v", v.point1Name, v.point2Name,
+				RadiansToDegrees(v.expectedBearing), RadiansToDegrees(result))
 		}
 	}
 }
