@@ -22,11 +22,8 @@ type DegreeUnits struct {
 	degree, minute, second float64
 }
 
-/*
-Coordinate is the position on earth in latitude/longitude.
-
-Negative longitude represents a longitude line in the western hemisphere.
-*/
+// Coordinate is the position on earth in latitude/longitude.
+// Negative longitude represents a longitude line in the western hemisphere.
 type Coordinate struct {
 	Latitude  float64
 	Longitude float64
