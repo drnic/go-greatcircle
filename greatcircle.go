@@ -207,7 +207,7 @@ func InitialBearing(point1, point2 Coordinate) float64 {
 IntersectionRadials determines the Coordinate that two Radials
 would interset.
 
-Adapted from http://williams.best.vwh.net/avform.htm#Intersection
+Adapted from http://webcache.googleusercontent.com/search?q=cache:qhjJEsGLvSUJ:williams.best.vwh.net/avform.htm+&cd=1&hl=en&ct=clnk&gl=au#Intersection
 */
 func IntersectionRadials(radial1, radial2 Radial) (coordinate Coordinate, err error) {
 	dst12 := 2 * math.Asin(math.Sqrt(math.Pow((math.Sin((radial1.Latitude-radial2.Latitude)/2)), 2)+
@@ -250,7 +250,7 @@ CrossTrackError (XTD) determines the distance off course.
 
 Positive XTD means right of course, negative means left.
 
-See http://williams.best.vwh.net/avform.htm#XTE for more information.
+See http://webcache.googleusercontent.com/search?q=cache:qhjJEsGLvSUJ:williams.best.vwh.net/avform.htm+&cd=1&hl=en&ct=clnk&gl=au#XTE for more information.
 */
 func CrossTrackError(routeStartCoord, routeEndCoord, actualCoord Coordinate) float64 {
 	// distance between point A and point D
@@ -266,7 +266,7 @@ func CrossTrackError(routeStartCoord, routeEndCoord, actualCoord Coordinate) flo
 /*
 AlongTrackDistance is the distance from routeStartCoord along the course towards routeEndCoord to the point abeam actualCoord.
 
-See http://williams.best.vwh.net/avform.htm#XTE for more information.
+See http://webcache.googleusercontent.com/search?q=cache:qhjJEsGLvSUJ:williams.best.vwh.net/avform.htm+&cd=1&hl=en&ct=clnk&gl=au#XTE for more information.
 "Note that we can also use the above formulae to find the point of closest approach to the point D on the great circle through A and B"
 */
 func AlongTrackDistance(routeStartCoord, routeEndCoord, actualCoord Coordinate) float64 {
@@ -281,7 +281,7 @@ func AlongTrackDistance(routeStartCoord, routeEndCoord, actualCoord Coordinate) 
 /*
 ClosestPoint determines the coordinate for the closest point along a course/radial from the actualCoord.
 
-Calculated using the formula from http://williams.best.vwh.net/avform.htm#Example - enroute waypoint.
+Calculated using the formula from http://webcache.googleusercontent.com/search?q=cache:qhjJEsGLvSUJ:williams.best.vwh.net/avform.htm+&cd=1&hl=en&ct=clnk&gl=au#Example - enroute waypoint.
 */
 func ClosestPoint(routeStartCoord, routeEndCoord, actualCoord Coordinate) Coordinate {
 	var coordinate Coordinate
