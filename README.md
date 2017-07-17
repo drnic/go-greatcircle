@@ -1,4 +1,6 @@
-Go language library for various Earth coordinate & Great Circle calcuations
+# Go library for Earth coordinate & Great Circle calculations
+
+http://godoc.org/github.com/drnic/go-greatcircle
 
 ```
 go get -u github.com/drnic/go-greatcircle
