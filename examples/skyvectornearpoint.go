@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	gc "github.com/drnic/greatcircle"
+	"github.com/drnic/go-greatcircle"
 )
 
-func coord(name string, latitude string, longitude string) gc.NamedCoordinate {
-	nc, err := gc.NewNamedCoordinate(name, latitude, longitude)
+func coord(name string, latitude string, longitude string) greatcircle.NamedCoordinate {
+	nc, err := greatcircle.NewNamedCoordinate(name, latitude, longitude)
 	if err != nil {
 		panic(nil)
 	}
@@ -15,7 +15,7 @@ func coord(name string, latitude string, longitude string) gc.NamedCoordinate {
 }
 
 func main() {
-	var coordsByName = map[string]gc.NamedCoordinate{
+	var coordsByName = map[string]greatcircle.NamedCoordinate{
 		"KSFO": coord("KSFO", "37:37:00", "122:22:00"),
 		"KSJC": coord("KSJC", "37:22:00", "121:55:00"),
 		"E16":  coord("E16", "37:5", "121:35:20"),
@@ -26,10 +26,10 @@ func main() {
 		"KKIC": coord("KKIC", "36:13:50", "121:7:00"),
 	}
 
-	ksjcOnRoute := gc.ClosestPoint(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, coordsByName["KSJC"].Coord)
-	e16OnRoute := gc.ClosestPoint(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, coordsByName["E16"].Coord)
+	ksjcOnRoute := greatcircle.ClosestPoint(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, coordsByName["KSJC"].Coord)
+	e16OnRoute := greatcircle.ClosestPoint(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, coordsByName["E16"].Coord)
 
-	route := gc.NewMultiPointRoute([]gc.NamedCoordinate{
+	route := greatcircle.NewMultiPointRoute([]greatcircle.NamedCoordinate{
 		coordsByName["KSFO"],
 		ksjcOnRoute.ToNamedCoordinate(),
 		e16OnRoute.ToNamedCoordinate(),
@@ -39,13 +39,13 @@ func main() {
 	fmt.Println("Visit http://skyvector.com/ and enter the following flight plan:")
 	fmt.Println(route.ToSkyVector())
 
-	coords := []gc.Coordinate{}
+	coords := []greatcircle.Coordinate{}
 	for _, coord := range coordsByName {
 		coords = append(coords, coord.Coord)
 	}
-	coordsInReach := gc.PointsInReach(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, 25, coords)
+	coordsInReach := greatcircle.PointsInReach(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, 25, coords)
 
-	route = gc.NewMultiPointRoute([]gc.NamedCoordinate{coordsByName["KSFO"]})
+	route = greatcircle.NewMultiPointRoute([]greatcircle.NamedCoordinate{coordsByName["KSFO"]})
 	for _, coordInReach := range coordsInReach {
 		if !coordInReach.Equal(coordsByName["KLAX"].Coord) {
 			route = append(route, coordInReach.ToNamedCoordinate())
@@ -57,10 +57,10 @@ func main() {
 	fmt.Println("Visit http://skyvector.com/ and enter the following flight plan:")
 	fmt.Println(route.ToSkyVector())
 
-	route = gc.NewMultiPointRoute([]gc.NamedCoordinate{coordsByName["KSFO"]})
+	route = greatcircle.NewMultiPointRoute([]greatcircle.NamedCoordinate{coordsByName["KSFO"]})
 	for _, coordInReach := range coordsInReach {
 		if !coordInReach.Equal(coordsByName["KLAX"].Coord) {
-			closestPoint := gc.ClosestPoint(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, coordInReach)
+			closestPoint := greatcircle.ClosestPoint(coordsByName["KSFO"].Coord, coordsByName["KLAX"].Coord, coordInReach)
 			route = append(route, closestPoint.ToNamedCoordinate())
 		}
 	}
